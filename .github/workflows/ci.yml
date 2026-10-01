@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  # 引擎测试 + 关卡表验证:Linux runner(快且便宜,技术选型 §2.10)
+  core:
+    name: Core 引擎(测试 + 关卡表门槛)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: 工具链
+        run: swift --version
+      - name: 单元测试(Swift Testing)
+        run: swift test --package-path Core
+      - name: 关卡表确定性(重新生成并字节比对)
+        run: |
+          swift run --package-path Core GenLevels --output /tmp/levels.json
+          diff /tmp/levels.json Neonigma/Resources/levels.json
+          echo "关卡表确定性 OK"
+      - name: 全量验证(PRD §11 A4 等价性 + A11 可解性)
+        run: swift run --package-path Core Validate --input /tmp/levels.json
+
+  # iOS 构建:macOS runner(仅在核心作业通过后)
+  ios:
+    name: iOS 构建(模拟器,免签名)
+    runs-on: macos-26
+    needs: core
+    steps:
+      - uses: actions/checkout@v4
+      - name: xcodebuild
+        run: |
+          set -o pipefail
+          xcodebuild -project Neonigma.xcodeproj -scheme Neonigma \
+            -destination 'generic/platform=iOS Simulator' \
+            -configuration Debug CODE_SIGNING_ALLOWED=NO build 2>&1 | tail -40
