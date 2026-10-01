@@ -230,6 +230,8 @@
 				<string>1,2</string>
 				<key>SWIFT_ACTIVE_COMPILATION_CONDITIONS</key>
 				<string>DEBUG</string>
+				<key>ONLY_ACTIVE_ARCH</key>
+				<string>YES</string>
 			</dict>
 			<key>name</key>
 			<string>Debug</string>
@@ -294,6 +296,8 @@
 				<string>NO</string>
 				<key>VALIDATE_PRODUCT</key>
 				<string>YES</string>
+				<key>ONLY_ACTIVE_ARCH</key>
+				<string>NO</string>
 			</dict>
 			<key>name</key>
 			<string>Release</string>

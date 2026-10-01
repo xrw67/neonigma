@@ -51,8 +51,8 @@ COMMON = {
     "SWIFT_VERSION": "6.0",
     "TARGETED_DEVICE_FAMILY": "1,2",
 }
-DEBUG = {**COMMON, "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "DEBUG"}
-RELEASE = {**COMMON, "ENABLE_NS_ASSERTIONS": "NO", "VALIDATE_PRODUCT": "YES"}
+DEBUG = {**COMMON, "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "DEBUG", "ONLY_ACTIVE_ARCH": "YES"}
+RELEASE = {**COMMON, "ENABLE_NS_ASSERTIONS": "NO", "VALIDATE_PRODUCT": "YES", "ONLY_ACTIVE_ARCH": "NO"}
 
 objects = {
     B0: {"isa": "PBXBuildFile", "productRef": B1},
@@ -114,4 +114,95 @@ plist = {
 with open("Neonigma.xcodeproj/project.pbxproj", "wb") as f:
     plistlib.dump(plist, f, fmt=plistlib.FMT_XML, sort_keys=False)
 
+# ---------- 共享 Scheme(保证 ⌘R 的 Run 动作存在且指向 App target) ----------
+import os
+
+SCHEME = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "2700"
+   version = "1.7">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "{A9}"
+               BuildableName = "Neonigma.app"
+               BlueprintName = "Neonigma"
+               ReferencedContainer = "container:Neonigma.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.Debugger"
+      selectedLauncherIdentifier = "Xcode.Debugger"
+      shouldUseLaunchSchemeArgsEnv = "YES">
+      <Testables>
+      </Testables>
+   </TestAction>
+   <LaunchAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.Debugger"
+      selectedLauncherIdentifier = "Xcode.Debugger"
+      launchStyle = "0"
+      askForAppToLaunch = "NO"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
+      allowLocationSimulation = "YES"
+      runUnitTestsAfterAppLaunch = "NO">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "{A9}"
+            BuildableName = "Neonigma.app"
+            BlueprintName = "Neonigma"
+            ReferencedContainer = "container:Neonigma.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+   </LaunchAction>
+   <ProfileAction
+      buildConfiguration = "Release"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      savedToolIdentifier = ""
+      useCustomWorkingDirectory = "NO"
+      debugDocumentVersioning = "YES">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "{A9}"
+            BuildableName = "Neonigma.app"
+            BlueprintName = "Neonigma"
+            ReferencedContainer = "container:Neonigma.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+   </ProfileAction>
+   <AnalyzeAction
+      buildConfiguration = "Debug">
+   </AnalyzeAction>
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES">
+   </ArchiveAction>
+</Scheme>
+"""
+
+scheme_dir = "Neonigma.xcodeproj/xcshareddata/xcschemes"
+os.makedirs(scheme_dir, exist_ok=True)
+with open(os.path.join(scheme_dir, "Neonigma.xcscheme"), "w") as f:
+    f.write(SCHEME)
+
 print("✓ project.pbxproj 已生成(XML plist,标量全字符串)")
+print("✓ 共享 Scheme 已生成(Neonigma.xcscheme)")
