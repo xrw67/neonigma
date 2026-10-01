@@ -52,13 +52,15 @@ swift test --package-path Core                        # 引擎测试(Swift Testi
 swift run --package-path Core GenLevels               # 重新生成 Neonigma/Resources/levels.json
 swift run --package-path Core Validate                # CI 门槛:等价性 + 600 关可解性
 swift run --package-path Core GenSounds               # 重新合成音效 WAV
+swift tools/gen_icon.swift --preview /tmp/icon.png    # 重新生成 App 图标(AppIcon.appiconset)
 ```
 
 工程 gotcha(重要):
 
 - **xcode-select 当前指向 CommandLineTools**:iOS 构建需 `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` 前缀,或用户执行 `sudo xcode-select -s /Applications/Xcode.app` 后直接用 xcodebuild。
 - **project.pbxproj 是 XML plist**,由 `tools/gen_pbxproj.py` 生成(标量必须全字符串、本地包用 `XCLocalSwiftPackageReference`+`relativePath`、包引用不得挂在主分组 children)。Xcode 打开保存后会改写为 OpenStep 格式——属正常;若工程描述损坏,改 python 脚本再 `python3 tools/gen_pbxproj.py` 重新生成,不要手补 OpenStep。
-- **levels.json 与 Sounds/*.wav 是生成产物但随包入库**(确定性生成);改生成器后必须重跑 GenLevels/GenSounds 并提交,CI 会 diff 字节一致性。
+- **levels.json、Sounds/*.wav、AppIcon icon-1024.png 是生成产物但随包入库**(确定性生成);改生成器后必须重跑对应工具并提交,CI 会 diff 关卡表字节一致性。
+- 图标生成脚本用 Quartz `noneSkipLast` 上下文保证 PNG 无 alpha(App Store 硬性要求);它依赖 macOS 宿主,故放 tools/ 而非 Core 包(ubuntu CI 会编译失败)。
 - 模拟器 runtime 仅有 iOS 26.5 / 27.0(最低支持 iOS 17 的真机回归待补 runtime)。
 - 调试直进对局页:`xcrun simctl launch <udid> com.xrw67.neonigma -game 101`(App 的 `-game <1...600>` 启动参数钩子)。
 

@@ -24,6 +24,7 @@ B1 = "0000000000000000000000B1"  # Core product dependency
 B2 = "0000000000000000000000B2"  # Core local package ref
 
 COMMON = {
+    "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
     "CODE_SIGN_STYLE": "Automatic",
     "CURRENT_PROJECT_VERSION": "1",
     "ENABLE_PREVIEWS": "YES",
