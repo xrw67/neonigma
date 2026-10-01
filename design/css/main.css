@@ -195,13 +195,16 @@ body.static .topnav { display: none; }  /* ?static=1:截图/打印视图 */
 .hdot.lit { animation: dotPop .35s ease both; }
 @keyframes dotPop { 0% { transform: scale(.3); opacity: 0; } 70% { transform: scale(1.25); } 100% { transform: scale(1); opacity: 1; } }
 
+/* 固定 2×2 槽位:最多 4 点两行两列,点数不足时徽章形状不变 */
 .ibadge {
-  display: flex; align-items: center; gap: 5px;
+  display: grid;
+  grid-template-columns: repeat(2, 9px);
+  grid-template-rows: repeat(2, 9px);
+  gap: 5px;
   background: var(--panel-2); border: 1px solid var(--line);
-  border-radius: 10px; padding: 8px 9px;
+  border-radius: 10px; padding: 8px;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, .4);
 }
-.ibadge .hdot { width: 8px; height: 8px; }
 
 /* 图例 */
 .legend { display: flex; gap: 14px; align-items: center; font-size: 11px; color: var(--text-3); padding: 8px 2px; flex-shrink: 0; }

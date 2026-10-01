@@ -83,18 +83,16 @@ function legendHTML() {
 
 function render(animateLast) {
   const used = S.rows.length - 1;
-  const rowsHTML = S.rows.map((r, i) => {
-    const hint = (r.isClue || hintKind === 'direct')
-      ? (hintKind === 'direct' ? directHTML(r.hint) : '')
-      : '';
-    const side = (!r.isClue && hintKind === 'indirect') ? badgeHTML(r.hint) : '';
+  const rowsHTML = S.rows.map((r) => {
+    const hint = hintKind === 'direct' ? directHTML(r.hint) : '';
+    const side = hintKind === 'indirect' ? badgeHTML(r.hint) : '';
     const tag = r.isClue ? '<div class="rowtag">第 1 行 · 起始线索</div>' : '';
     return '<div class="rowwrap' + (r.isClue ? ' clue' : '') + '">' +
       '<div class="rowmain">' + tag +
       '<div class="rowcells">' + r.guess.map(c =>
         '<span class="peg pc-' + COLORS[c] + (symOn ? '"><span class="sym">' + SYMS[c] + '</span></span>' : '"></span>')
       ).join('') + '</div>' +
-      (hintKind === 'direct' ? (r.isClue ? directHTML(r.hint) : directHTML(r.hint)) : '') +
+      hint +
       '</div>' + side + '</div>';
   }).join('');
 

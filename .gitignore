@@ -1,2 +1,17 @@
+# macOS
 .DS_Store
+
+# 会话工作目录
 .zcode/**
+
+# Xcode
+DerivedData/
+build/
+xcuserdata/
+*.xcuserstate
+
+# Swift Package Manager
+.build/
+
+# 临时产物
+*.log
