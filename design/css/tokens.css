@@ -1,0 +1,62 @@
+/* ============================================================
+   设计变量(Style A · 霓虹灯珠 复古电子风)
+   与 docs/需求文档.md §6 对齐;后续可直接映射为 SwiftUI Asset Catalog
+   ============================================================ */
+:root {
+  /* ---- 7 种密码色(base / 高光 / 暗部 / 辉光) ---- */
+  --c-red:    #E5484D;  --c-red-hi:    #FF8A8E;  --c-red-lo:    #7E1A20;  --glow-red:    rgba(229, 72, 77, .45);
+  --c-orange: #F76B15;  --c-orange-hi: #FFA86B;  --c-orange-lo: #8A3805;  --glow-orange: rgba(247, 107, 21, .45);
+  --c-yellow: #FFC53D;  --c-yellow-hi: #FFE29A;  --c-yellow-lo: #8F6A0A;  --glow-yellow: rgba(255, 197, 61, .42);
+  --c-green:  #46A758;  --c-green-hi:  #8BD39A;  --c-green-lo:  #1E5C2B;  --glow-green:  rgba(70, 167, 88, .45);
+  --c-blue:   #0091FF;  --c-blue-hi:   #6BC1FF;  --c-blue-lo:   #004E8C;  --glow-blue:   rgba(0, 145, 255, .45);
+  --c-purple: #8E4EC6;  --c-purple-hi: #C493F0;  --c-purple-lo: #4C2178;  --glow-purple: rgba(142, 78, 198, .48);
+  --c-white:  #F2F0EF;  --c-white-hi:  #FFFFFF;  --c-white-lo:  #A9A5A2;  --glow-white:  rgba(242, 240, 239, .38);
+
+  /* ---- 提示三态 ---- */
+  --hint-on:   #30D158;  --glow-hint-on:   rgba(48, 213, 88, .55);
+  --hint-wt:   #F2F0EF;  --glow-hint-wt:   rgba(242, 240, 239, .5);
+  --hint-off:  #262E3A;
+
+  /* ---- 背景层级 ---- */
+  --bg-page:   #070A0F;   /* 画廊页底 */
+  --bg-screen: #0E1116;   /* 手机屏内底 */
+  --panel:     #161B22;   /* 卡片一级 */
+  --panel-2:   #1D232C;   /* 卡片二级 */
+  --well:      #151B26;   /* 凹槽 */
+  --line:      #262E3A;   /* 描边 */
+  --line-soft: #1A2029;
+
+  /* ---- 文字层级 ---- */
+  --text-1: #F0F3F7;
+  --text-2: #9BA6B5;
+  --text-3: #5C6675;
+
+  /* ---- 功能色 ---- */
+  --amber:      #FFB224;   /* CTA / LED 数字屏 */
+  --amber-hi:   #FFD37A;
+  --amber-lo:   #B26E00;
+  --glow-amber: rgba(255, 178, 36, .45);
+  --danger:     #FF5D5D;
+  --star:       #FFC53D;
+
+  /* ---- 圆角 ---- */
+  --r-peg:   12px;
+  --r-btn:   14px;
+  --r-panel: 18px;
+  --r-sheet: 24px;
+
+  /* ---- 字体 ---- */
+  --font-ui:  -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Segoe UI", "Noto Sans SC", sans-serif;
+  --font-round: "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", sans-serif;
+  --font-led: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+
+  /* ---- 辉光 / 阴影 ---- */
+  --glow-peg: 0 0 16px;      /* 配合 --glow-* 使用 */
+  --shadow-panel: 0 10px 30px rgba(0, 0, 0, .35);
+  --inset-well: inset 0 3px 8px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(255, 255, 255, .04);
+
+  /* ---- 尺寸 ---- */
+  --peg: 44px;
+  --phone-w: 390px;
+  --phone-h: 844px;
+}

@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>霓虹密码机 Neonigma · 视觉 UI 设计稿(Style A 霓虹灯珠)</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230E1116'/%3E%3Crect x='4' y='4' width='11' height='11' rx='3.5' fill='%23E5484D'/%3E%3Crect x='17' y='4' width='11' height='11' rx='3.5' fill='%230091FF'/%3E%3Crect x='4' y='17' width='11' height='11' rx='3.5' fill='%23FFC53D'/%3E%3Crect x='17' y='17' width='11' height='11' rx='3.5' fill='%238E4EC6'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<header class="topnav">
+  <span class="logo">NEON<em>IGMA</em> · 霓虹密码机 · UI</span>
+  <nav>
+    <a href="#tokens">设计系统</a>
+    <a href="#core">核心对局</a>
+    <a href="#flow">流程页面</a>
+    <a href="#demo">可玩 Demo</a>
+  </nav>
+  <span class="meta">Style A · 霓虹灯珠 | 390×844 | 纯 CSS · 无图片</span>
+</header>
+
+<div class="pagehead">
+  <h1>《霓虹密码机 Neonigma》<em>视觉 UI 设计稿</em></h1>
+  <p>复刻掌上密码破译机的 iOS 游戏,已定名「霓虹密码机 Neonigma」(命名查重与说明见 PRD §1.3)。深炭黑哑光底板上的发光色珠,复刻"电子解谜机"的街机手感;所有界面为 390×844 竖屏设计,与 <b>docs/需求文档.md</b> §3–§6 规格一一对应。页面底部附<b>可玩 Demo</b>,提示判定为真实逻辑。</p>
+  <div class="chips">
+    <span class="chip"><span class="dot" style="background:var(--c-red)"></span>风格 A · 霓虹灯珠</span>
+    <span class="chip">12 屏静态稿 + 1 可玩 Demo</span>
+    <span class="chip">色盲辅助符号 ■▲●◆★✚✿</span>
+    <span class="chip">离线可用 · 双击即开</span>
+  </div>
+</div>
+
+<!-- ================= 01 设计系统 ================= -->
+<section class="zone" id="tokens">
+  <h2><span class="no">01</span>设计系统<span class="desc">Design Tokens · 组件库</span></h2>
+  <div class="tokwrap">
+
+    <div class="tok-group">
+      <div class="card">
+        <h3>密码七色 + 色盲符号</h3>
+        <div class="swatches">
+          <div class="sw"><div class="swc pc-red"    style="background:radial-gradient(130% 130% at 30% 18%, var(--c-red-hi), var(--c-red) 55%, var(--c-red-lo));box-shadow:0 0 16px var(--glow-red)"></div><b>红 R</b>#E5484D ■</div>
+          <div class="sw"><div class="swc"           style="background:radial-gradient(130% 130% at 30% 18%, var(--c-orange-hi), var(--c-orange) 55%, var(--c-orange-lo));box-shadow:0 0 16px var(--glow-orange)"></div><b>橙 O</b>#F76B15 ▲</div>
+          <div class="sw"><div class="swc"           style="background:radial-gradient(130% 130% at 30% 18%, var(--c-yellow-hi), var(--c-yellow) 55%, var(--c-yellow-lo));box-shadow:0 0 16px var(--glow-yellow)"></div><b>黄 Y</b>#FFC53D ●</div>
+          <div class="sw"><div class="swc"           style="background:radial-gradient(130% 130% at 30% 18%, var(--c-green-hi), var(--c-green) 55%, var(--c-green-lo));box-shadow:0 0 16px var(--glow-green)"></div><b>绿 G</b>#46A758 ◆</div>
+          <div class="sw"><div class="swc"           style="background:radial-gradient(130% 130% at 30% 18%, var(--c-blue-hi), var(--c-blue) 55%, var(--c-blue-lo));box-shadow:0 0 16px var(--glow-blue)"></div><b>蓝 B</b>#0091FF ★</div>
+          <div class="sw"><div class="swc"           style="background:radial-gradient(130% 130% at 30% 18%, var(--c-purple-hi), var(--c-purple) 55%, var(--c-purple-lo));box-shadow:0 0 16px var(--glow-purple)"></div><b>紫 P</b>#8E4EC6 ✚</div>
+          <div class="sw"><div class="swc"           style="background:radial-gradient(130% 130% at 30% 18%, var(--c-white-hi), var(--c-white) 55%, var(--c-white-lo));box-shadow:0 0 16px var(--glow-white)"></div><b>白 W</b>#F2F0EF ✿</div>
+          <div class="sw"><div class="swc"           style="background:linear-gradient(180deg, var(--amber-hi), var(--amber) 45%, var(--amber-lo));box-shadow:0 0 16px var(--glow-amber)"></div><b>CTA</b>#FFB224</div>
+        </div>
+        <p class="tok-note">色珠采用「上高光 / 中基色 / 下暗部」的径向渐变模拟 LED 灯珠体积感,配同色系外发光。色盲符号以 10px 深色水印叠加于色珠右下角(设置中可开)。</p>
+      </div>
+    </div>
+
+    <div class="tok-group">
+      <div class="card">
+        <h3>提示三态 & 色珠状态</h3>
+        <div class="democol">
+          <div class="demorow">
+            <span class="hdot on lit"></span><span style="font-size:12px;color:var(--text-2)">🟢 对色对位 #30D158</span>
+          </div>
+          <div class="demorow">
+            <span class="hdot wt"></span><span style="font-size:12px;color:var(--text-2)">⚪ 对色错位 #F2F0EF</span>
+          </div>
+          <div class="demorow">
+            <span class="hdot"></span><span style="font-size:12px;color:var(--text-2)">⚫ 颜色不存在 #262E3A</span>
+          </div>
+          <div class="demorow" style="margin-top:6px;padding-top:12px;border-top:1px solid var(--line-soft)">
+            <span class="peg"></span>
+            <span class="peg pc-red"><span class="sym">■</span></span>
+            <span class="peg pc-green sel"></span>
+            <span class="peg pc-purple dim"></span>
+            <span class="peg pc-white ghosted"></span>
+          </div>
+          <p class="tok-note">从左至右:空凹槽 / 填充(带符号)/ 选中(琥珀描边+呼吸)/ 历史行(降饱和)/ 未来的行(幽灵)。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tok-group">
+      <div class="card">
+        <h3>行 · 直接提示 / 间接提示</h3>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="rowwrap clue">
+            <div class="rowmain">
+              <div class="rowtag">第 1 行 · 起始线索</div>
+              <div class="rowcells"><span class="peg pc-purple"></span><span class="peg pc-orange"></span><span class="peg pc-blue"></span><span class="peg pc-white"></span></div>
+              <div class="dhints"><span class="slot"><span class="hdot on"></span></span><span class="slot"><span class="hdot"></span></span><span class="slot"><span class="hdot on"></span></span><span class="slot"><span class="hdot wt"></span></span></div>
+            </div>
+          </div>
+          <div class="rowwrap">
+            <div class="rowmain" style="flex:0 0 auto">
+              <div class="rowcells"><span class="peg pc-red"></span><span class="peg pc-green"></span><span class="peg pc-purple"></span><span class="peg pc-yellow"></span></div>
+            </div>
+            <span class="ibadge"><span class="hdot on"></span><span class="hdot wt"></span><span class="hdot wt"></span></span>
+          </div>
+          <p class="tok-note">简单模式:提示逐格对应(行下方,信息强);进阶模式:行右侧聚合计数徽章(只报数量,不报位置)。蓝色框 = 线索行,琥珀框 = 当前编辑行。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tok-group">
+      <div class="card">
+        <h3>按钮 · 控件 · 数字屏</h3>
+        <div class="democol">
+          <div class="btnrow" style="width:300px">
+            <button class="btn btn-primary">确 认</button>
+            <button class="btn btn-ghost">清空</button>
+          </div>
+          <div class="demorow">
+            <span class="led">E-023</span>
+            <span class="led sm danger">00:28</span>
+            <button class="icobtn accent">↻</button>
+            <button class="icobtn">♪</button>
+          </div>
+          <div class="demorow">
+            <span class="seg" style="width:220px"><button class="on">直接提示</button><button>间接提示</button></span>
+            <span class="toggle on"></span>
+            <span class="toggle"></span>
+          </div>
+          <div class="demorow">
+            <span class="stars"><i class="on">★</i><i class="on">★</i><i class="on">★</i></span>
+            <span class="stars"><i class="on">★</i><i class="on">★</i><i>★</i></span>
+            <span class="lvcell done" style="width:52px">E01<span class="stars"><i class="on">★</i><i class="on">★</i><i class="on">★</i></span></span>
+            <span class="lvcell now" style="width:52px">E23<span class="stars"><i>★</i><i>★</i><i>★</i></span></span>
+          </div>
+          <p class="tok-note">LED 数字屏承载关卡号与双人倒计时(最后 30 秒切换红色 danger 态);CTA 琥珀渐变对应原型机的橙色实体键。</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= 02 核心对局 ================= -->
+<section class="zone" id="core">
+  <h2><span class="no">02</span>核心对局<span class="desc">直接提示 / 间接提示 两种形态</span></h2>
+  <div class="gallery">
+
+    <!-- S1 对局 · 简单(直接提示) -->
+    <figure class="shot">
+      <div class="phone"><div class="buttons"></div><div class="screen">
+        <div class="content">
+          <div class="navbar">
+            <div class="side"><button class="icobtn">‹</button></div>
+            <div class="led">E-023</div>
+            <div class="side"><button class="icobtn accent">↻</button><button class="icobtn">♪</button></div>
+          </div>
+          <div class="chipline">
+            <span>简单 · 直接提示</span>
+            <span>已用 2/6 次</span>
+          </div>
+          <div class="legend">
+            <span><i class="hdot on"></i>对色对位</span>
+            <span><i class="hdot wt"></i>对色错位</span>
+            <span><i class="hdot"></i>不存在</span>
+          </div>
+          <div class="rows">
+            <div class="rowwrap clue">
+              <div class="rowmain">
+                <div class="rowtag">第 1 行 · 起始线索</div>
+                <div class="rowcells"><span class="peg pc-purple"></span><span class="peg pc-orange"></span><span class="peg pc-blue"></span><span class="peg pc-white"></span></div>
+                <div class="dhints"><span class="slot"><span class="hdot on"></span></span><span class="slot"><span class="hdot"></span></span><span class="slot"><span class="hdot on"></span></span><span class="slot"><span class="hdot wt"></span></span></div>
+              </div>
+            </div>
+            <div class="rowwrap">
+              <div class="rowmain">
+                <div class="rowcells"><span class="peg pc-red"></span><span class="peg pc-green"></span><span class="peg pc-purple"></span><span class="peg pc-yellow"></span></div>
+                <div class="dhints"><span class="slot"><span class="hdot wt"></span></span><span class="slot"><span class="hdot on"></span></span><span class="slot"><span class="hdot wt"></span></span><span class="slot"><span class="hdot"></span></span></div>
+              </div>
+            </div>
+            <div class="rowwrap current">
+              <div class="rowmain">
+                <div class="rowtag">第 3 行 · 编辑中</div>
+                <div class="rowcells"><span class="peg pc-green"></span><span class="peg pc-blue"></span><span class="peg sel"></span><span class="peg"></span></div>
+              </div>
+            </div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span></div></div></div>
+          </div>
+          <div class="controls">
+            <div class="palette">
+              <button class="peg pc-red"></button><button class="peg pc-orange"></button><button class="peg pc-yellow"></button><button class="peg pc-green"></button><button class="peg pc-blue"></button><button class="peg pc-purple"></button><button class="peg pc-white"></button>
+            </div>
+            <div class="btnrow">
+              <button class="btn btn-ghost">清空</button>
+              <button class="btn btn-primary">确 认</button>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption>
+        <div class="t"><span class="idx">S1</span>对局 · 简单模式(直接提示)</div>
+        <div class="d">E-023 关中局:第 1 行系统起始线索(蓝框),提示逐格对应;第 3 行为当前编辑行(琥珀框),选中格呼吸描边。顶部 LED 屏显示关卡号,对应原型机数字屏。</div>
+      </figcaption>
+    </figure>
+
+    <!-- S2 对局 · 进阶(间接提示) -->
+    <figure class="shot">
+      <div class="phone"><div class="buttons"></div><div class="screen">
+        <div class="content">
+          <div class="navbar">
+            <div class="side"><button class="icobtn">‹</button></div>
+            <div class="led">A-137</div>
+            <div class="side"><button class="icobtn accent">↻</button><button class="icobtn">♪</button></div>
+          </div>
+          <div class="chipline">
+            <span>进阶 · 间接提示</span>
+            <span>已用 4/6 次</span>
+          </div>
+          <div class="legend">
+            <span><i class="hdot on"></i>对位个数</span>
+            <span><i class="hdot wt"></i>错位个数</span>
+            <span style="color:var(--text-3)">只报数量 · 不报位置</span>
+          </div>
+          <div class="rows">
+            <div class="rowwrap clue">
+              <div class="rowmain">
+                <div class="rowtag">第 1 行 · 起始线索</div>
+                <div class="rowcells"><span class="peg pc-white"></span><span class="peg pc-green"></span><span class="peg pc-yellow"></span><span class="peg pc-purple"></span></div>
+              </div>
+              <span class="ibadge"><span class="hdot on"></span><span class="hdot wt"></span></span>
+            </div>
+            <div class="rowwrap">
+              <div class="rowmain"><div class="rowcells"><span class="peg pc-red"></span><span class="peg pc-blue"></span><span class="peg pc-orange"></span><span class="peg pc-purple"></span></div></div>
+              <span class="ibadge"><span class="hdot on"></span><span class="hdot wt"></span><span class="hdot wt"></span></span>
+            </div>
+            <div class="rowwrap">
+              <div class="rowmain"><div class="rowcells"><span class="peg pc-orange"></span><span class="peg pc-white"></span><span class="peg pc-red"></span><span class="peg pc-green"></span></div></div>
+              <span class="ibadge"><span class="hdot wt"></span><span class="hdot wt"></span></span>
+            </div>
+            <div class="rowwrap current">
+              <div class="rowmain">
+                <div class="rowtag">第 5 行 · 编辑中</div>
+                <div class="rowcells"><span class="peg pc-yellow"></span><span class="peg pc-blue"></span><span class="peg pc-red"></span><span class="peg sel pc-green"></span></div>
+              </div>
+              <span class="ibadge" style="opacity:.5"><span class="hdot"></span><span class="hdot"></span></span>
+            </div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span></div></div></div>
+          </div>
+          <div class="controls">
+            <div class="palette">
+              <button class="peg pc-red"></button><button class="peg pc-orange"></button><button class="peg pc-yellow"></button><button class="peg pc-green"></button><button class="peg pc-blue"></button><button class="peg pc-purple"></button><button class="peg pc-white"></button>
+            </div>
+            <div class="btnrow">
+              <button class="btn btn-ghost">清空</button>
+              <button class="btn btn-primary">确 认</button>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption>
+        <div class="t"><span class="idx">S2</span>对局 · 进阶模式(间接提示)</div>
+        <div class="d">A-137 关:提示从"行下方逐格"变为"行右侧计数徽章",玩家只知道有几个对位/错位、不知道对应哪格,推理深度显著提升。当前行右侧徽章以低透明度占位。</div>
+      </figcaption>
+    </figure>
+
+  </div>
+</section>
+
+<!-- ================= 03 流程页面 ================= -->
+<section class="zone" id="flow">
+  <h2><span class="no">03</span>流程页面<span class="desc">主菜单 · 选关 · 教程 · 双人 · 结算 · 设置 · 统计</span></h2>
+  <div class="gallery">
+
+    <!-- S3 主菜单 -->
+    <figure class="shot">
+      <div class="phone"><div class="buttons"></div><div class="screen">
+        <div class="content" style="padding-top:14px">
+          <div class="menuhero">
+            <div class="logoPegs"><span class="peg pc-red"></span><span class="peg pc-blue"></span><span class="peg pc-purple"></span><span class="peg pc-yellow"></span></div>
+            <h1>霓虹密码机</h1>
+            <div class="en">NEONIGMA</div>
+          </div>
+          <div class="menucards">
+            <button class="modecard continue">
+              <span class="mic pc-blue" style="background:rgba(0,145,255,.15);color:var(--c-blue-hi)">▶</span>
+              <span>
+                <b>继续闯关 · E-023</b>
+                <span class="d">简单模式 · 已破译 37/600 关 · ★ 86</span>
+                <span class="progressbar" style="margin-top:8px;width:200px"><i style="width:6%"></i></span>
+              </span>
+              <span class="arr">›</span>
+            </button>
+            <button class="modecard">
+              <span class="mic" style="background:rgba(70,167,88,.14);color:var(--c-green-hi)">🎯</span>
+              <span><b>单人闯关</b><span class="d">简单 100 关 + 进阶 500 关,自由跳关</span></span>
+              <span class="arr">›</span>
+            </button>
+            <button class="modecard">
+              <span class="mic" style="background:rgba(142,78,198,.16);color:var(--c-purple-hi)">👥</span>
+              <span><b>双人对战</b><span class="d">面对面出题 × 破译,支持限时</span></span>
+              <span class="arr">›</span>
+            </button>
+            <button class="modecard">
+              <span class="mic" style="background:rgba(255,178,36,.14);color:var(--amber-hi)">📅</span>
+              <span><b>每日挑战</b><span class="d">全网同题 · 今日已就绪</span></span>
+              <span class="arr">›</span>
+            </button>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:center;margin-top:16px">
+            <button class="icobtn" title="教程">?</button>
+            <button class="icobtn" title="统计">◔</button>
+            <button class="icobtn" title="设置">⚙</button>
+          </div>
+          <div style="text-align:center;margin-top:auto;padding-bottom:26px;font-size:11px;color:var(--text-3)">霓虹密码机 Neonigma · v0.1.0 · 设计稿</div>
+        </div>
+      </div></div>
+      <figcaption>
+        <div class="t"><span class="idx">S3</span>主菜单</div>
+        <div class="d">Logo 用四枚浮动色珠呼应核心玩法;"继续闯关"为第一视觉入口并带全局进度条;三大模式卡片以色相区分(绿=单人、紫=双人、琥珀=每日)。</div>
+      </figcaption>
+    </figure>
+
+    <!-- S4 关卡选择 -->
+    <figure class="shot">
+      <div class="phone"><div class="buttons"></div><div class="screen">
+        <div class="content" style="padding-top:8px">
+          <div class="navbar">
+            <div class="side"><button class="icobtn">‹</button></div>
+            <span class="ttl">关卡选择</span>
+            <div class="side"><span class="led sm">★ 86</span></div>
+          </div>
+          <div class="chipline"><span>已破译 37/600</span><span>自由跳关 · 星级随时可刷</span></div>
+          <div class="seg" style="margin-bottom:14px">
+            <button class="on">简单 · 直接提示</button>
+            <button>进阶 · 间接提示</button>
+          </div>
+          <div class="chipline" style="margin:2px 2px 10px">
+            <span style="font-size:14px;color:var(--text-1);font-weight:700">‹ 第 2 章 · 城市灯火</span>
+            <span>E021–040 · 3/20</span>
+          </div>
+          <div class="lvgrid">
+            <span class="lvcell done">E21<span class="stars"><i class="on">★</i><i class="on">★</i><i class="on">★</i></span></span>
+            <span class="lvcell done">E22<span class="stars"><i class="on">★</i><i class="on">★</i><i>★</i></span></span>
+            <span class="lvcell now">E23<span class="stars"><i>★</i><i>★</i><i>★</i></span></span>
+            <span class="lvcell">E24<span class="stars"><i>★</i><i>★</i><i>★</i></span></span>
+            <span class="lvcell">E25<span class="stars"><i>★</i><i>★</i><i>★</i></span></span>
+            <span class="lvcell">E26<span class="stars"><i>★</i><i>★</i><i>★</i></span></span>
+            <span class="lvcell">E27<span class="stars"><i>★</i><i>★</i><i>★</i></span></span>
+            <span class="lvcell">E28<span class="stars"><i>★</i><i>★</i><i>★</i></span></span>
+            <span class="lvcell">E29<span class="stars"><i>★</i><i>★</i><i>★</i></span></span>
+            <span class="lvcell">E30<span class="stars"><i>★</i><i>★</i><i>★</i></span></span>
+            <span class="lvcell">E31<span class="stars"><i>★</i><i>★</i><i>★</i></span></span>
+            <span class="lvcell">E32<span class="stars"><i>★</i><i>★</i><i>★</i></span></span>
+            <span class="lvcell">E33<span class="stars"><i>★</i><i>★</i><i>★</i></span></span>
+            <span class="lvcell">E34<span class="stars"><i>★</i><i>★</i><i>★</i></span></span>
+            <span class="lvcell">E35<span class="stars"><i>★</i><i>★</i><i>★</i></span></span>
+            <span class="lvcell">E36<span class="stars"><i>★</i><i>★</i><i>★</i></span></span>
+            <span class="lvcell">E37<span class="stars"><i>★</i><i>★</i><i>★</i></span></span>
+            <span class="lvcell">E38<span class="stars"><i>★</i><i>★</i><i>★</i></span></span>
+            <span class="lvcell">E39<span class="stars"><i>★</i><i>★</i><i>★</i></span></span>
+            <span class="lvcell">E40<span class="stars"><i>★</i><i>★</i><i>★</i></span></span>
+          </div>
+          <div style="margin-top:auto;padding:16px 0 30px;display:flex;justify-content:center">
+            <span class="tag">关卡间可任意跳转 · 复刻原型"可跳关"设计</span>
+          </div>
+        </div>
+      </div></div>
+      <figcaption>
+        <div class="t"><span class="idx">S4</span>关卡选择</div>
+        <div class="d">顶部「简单/进阶」分段切换对应两种提示形态;章节化组织(PRD §4.5 难度曲线),琥珀格 = 当前进度,星级取历史最好成绩,全部关卡可直接点入。</div>
+      </figcaption>
+    </figure>
+
+    <!-- S5 教程 -->
+    <figure class="shot">
+      <div class="phone"><div class="buttons"></div><div class="screen">
+        <div class="content">
+          <div class="navbar">
+            <div class="side"><button class="icobtn">‹</button></div>
+            <div class="led">E-001</div>
+            <div class="side"><button class="icobtn accent">↻</button><button class="icobtn">♪</button></div>
+          </div>
+          <div class="rows" style="justify-content:flex-start;padding-top:8px">
+            <div class="rowwrap clue">
+              <div class="rowmain">
+                <div class="rowtag">第 1 行 · 起始线索</div>
+                <div class="rowcells"><span class="peg pc-purple"></span><span class="peg pc-red"></span><span class="peg pc-blue"></span><span class="peg pc-orange"></span></div>
+                <div class="dhints"><span class="slot"><span class="hdot on"></span></span><span class="slot"><span class="hdot on"></span></span><span class="slot"><span class="hdot on"></span></span><span class="slot"><span class="hdot"></span></span></div>
+              </div>
+            </div>
+            <div class="rowwrap current tuttarget">
+              <div class="rowmain">
+                <div class="rowtag">第 2 行 · 编辑中</div>
+                <div class="rowcells"><span class="peg pc-purple"></span><span class="peg pc-red"></span><span class="peg pc-blue"></span><span class="peg"></span></div>
+              </div>
+            </div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span></div></div></div>
+          </div>
+          <div class="controls">
+            <div class="palette">
+              <button class="peg pc-red"></button><button class="peg pc-orange"></button><button class="peg pc-yellow"></button><button class="peg pc-green"></button><button class="peg pc-blue"></button><button class="peg pc-purple"></button><button class="peg pc-white"></button>
+            </div>
+          </div>
+          <div class="tutdim"></div>
+          <button class="tutskip">跳过教程</button>
+          <div class="tutcard">
+            <div class="card">
+              <div class="pips"><i class="on"></i><i></i><i></i></div>
+              <h3>点亮格子</h3>
+              <p>点一下空格子选中它,再从下方色盘挑一种颜色。也可以在格子上<b>上下滑动</b>直接换色。填满 4 格后按「确认」提交!</p>
+              <div class="btnrow" style="margin-top:14px"><button class="btn btn-primary">下一步</button></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption>
+        <div class="t"><span class="idx">S5</span>新手教程(第 1/3 步)</div>
+        <div class="d">聚光灯压暗棋盘,琥珀描边锁定当前操作对象;E-001 的谜面设计为"3 绿 + 1 空",教程内即可体验一步破译的成就感(PRD §4.6)。</div>
+      </figcaption>
+    </figure>
+
+    <!-- S6 双人 · 出题 -->
+    <figure class="shot">
+      <div class="phone"><div class="buttons"></div><div class="screen">
+        <div class="content" style="padding-top:8px">
+          <div class="navbar">
+            <div class="side"><button class="icobtn">‹</button></div>
+            <span class="ttl">双人对战</span>
+            <div class="side"><span class="led sm">出题 1/2</span></div>
+          </div>
+          <div class="card" style="margin-top:6px;display:flex;align-items:center;gap:14px">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8" stroke-linecap="round">
+              <path d="M2 12c2.5-4.5 6-7 10-7s7.5 2.5 10 7c-2.5 4.5-6 7-10 7S4.5 16.5 2 12z"/>
+              <circle cx="12" cy="12" r="3"/>
+              <line x1="4" y1="20" x2="20" y2="4"/>
+            </svg>
+            <div>
+              <b style="font-size:15px">出题者 · 别让破译者偷看</b>
+              <div style="font-size:12px;color:var(--text-3);margin-top:3px">设好密码后,把手机交给对方</div>
+            </div>
+          </div>
+          <div class="rowcells" style="justify-content:center;gap:14px;margin:22px 0 16px">
+            <span class="peg big pc-red"></span><span class="peg big pc-purple"></span><span class="peg big sel"></span><span class="peg big"></span>
+          </div>
+          <div style="display:flex;justify-content:center;margin-bottom:20px">
+            <span class="tag">4 色互不相同 · 有重复将无法提交</span>
+          </div>
+          <div class="palette" style="gap:10px">
+            <button class="peg pc-red"></button><button class="peg pc-orange"></button><button class="peg pc-yellow"></button><button class="peg pc-green"></button><button class="peg pc-blue"></button><button class="peg pc-purple"></button><button class="peg pc-white"></button>
+          </div>
+          <div class="list">
+            <div class="group-t">破译限时</div>
+            <div class="seg sm" style="background:var(--panel-2)">
+              <button>不限时</button><button>1 分</button><button class="on">3 分</button><button>5 分</button><button>10 分</button>
+            </div>
+          </div>
+          <div style="margin-top:auto;padding-bottom:34px">
+            <button class="btn btn-primary" style="width:100%">交给破译者 ›</button>
+          </div>
+        </div>
+      </div></div>
+      <figcaption>
+        <div class="t"><span class="idx">S6</span>双人 · 出题页</div>
+        <div class="d">对应原型"翻转机身防偷看":出题者全程可见大号色珠编辑区;提交前强制校验 4 色互不相同(PRD FR-D2);限时档位对应原型"旋钮选时间"。</div>
+      </figcaption>
+    </figure>
+
+    <!-- S7 双人 · 倒计时对局 -->
+    <figure class="shot">
+      <div class="phone"><div class="buttons"></div><div class="screen">
+        <div class="content">
+          <div class="navbar">
+            <div class="side"><button class="icobtn">‹</button></div>
+            <div class="led">02:31</div>
+            <div class="side"><span class="led sm">出 1:0 破</span></div>
+          </div>
+          <div class="chipline">
+            <span>破译者 · 第 4/7 次</span>
+            <span>进阶 · 间接提示</span>
+          </div>
+          <div class="legend">
+            <span><i class="hdot on"></i>对位个数</span>
+            <span><i class="hdot wt"></i>错位个数</span>
+          </div>
+          <div class="rows">
+            <div class="rowwrap">
+              <div class="rowmain"><div class="rowcells"><span class="peg pc-red"></span><span class="peg pc-green"></span><span class="peg pc-blue"></span><span class="peg pc-purple"></span></div></div>
+              <span class="ibadge"><span class="hdot on"></span><span class="hdot wt"></span></span>
+            </div>
+            <div class="rowwrap">
+              <div class="rowmain"><div class="rowcells"><span class="peg pc-yellow"></span><span class="peg pc-purple"></span><span class="peg pc-red"></span><span class="peg pc-white"></span></div></div>
+              <span class="ibadge"><span class="hdot wt"></span><span class="hdot wt"></span></span>
+            </div>
+            <div class="rowwrap">
+              <div class="rowmain"><div class="rowcells"><span class="peg pc-green"></span><span class="peg pc-white"></span><span class="peg pc-orange"></span><span class="peg pc-yellow"></span></div></div>
+              <span class="ibadge"><span class="hdot on"></span><span class="hdot wt"></span><span class="hdot wt"></span></span>
+            </div>
+            <div class="rowwrap current">
+              <div class="rowmain">
+                <div class="rowtag">第 4 行 · 编辑中</div>
+                <div class="rowcells"><span class="peg pc-blue"></span><span class="peg pc-orange"></span><span class="peg"></span><span class="peg"></span></div>
+              </div>
+            </div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span><span class="peg ghosted"></span></div></div></div>
+          </div>
+          <div class="controls">
+            <div class="palette">
+              <button class="peg pc-red"></button><button class="peg pc-orange"></button><button class="peg pc-yellow"></button><button class="peg pc-green"></button><button class="peg pc-blue"></button><button class="peg pc-purple"></button><button class="peg pc-white"></button>
+            </div>
+            <div class="btnrow">
+              <button class="btn btn-ghost">清空</button>
+              <button class="btn btn-primary">确 认</button>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption>
+        <div class="t"><span class="idx">S7</span>双人 · 倒计时对局</div>
+        <div class="d">破译者视角:无起始线索,7 次机会(PRD FR-D4);LED 屏变成倒计时,最后 30 秒切红色 danger 态 + 心跳触觉;右上比分徽章实时显示「出 1:0 破」。</div>
+      </figcaption>
+    </figure>
+
+    <!-- S8 双人 · 结算 -->
+    <figure class="shot">
+      <div class="phone"><div class="buttons"></div><div class="screen">
+        <div class="content">
+          <div class="navbar">
+            <div class="side"><button class="icobtn">‹</button></div>
+            <div class="led">03:00</div>
+            <div class="side"><span class="led sm">出 1:0 破</span></div>
+          </div>
+          <div class="rows" style="opacity:.75;padding-top:8px">
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg pc-red"></span><span class="peg pc-green"></span><span class="peg pc-blue"></span><span class="peg pc-purple"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg pc-yellow"></span><span class="peg pc-purple"></span><span class="peg pc-red"></span><span class="peg pc-white"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg pc-green"></span><span class="peg pc-white"></span><span class="peg pc-orange"></span><span class="peg pc-yellow"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg pc-blue"></span><span class="peg pc-orange"></span><span class="peg pc-purple"></span><span class="peg pc-yellow"></span></div></div></div>
+          </div>
+          <div class="overlay">
+            <div class="sheet">
+              <span class="tag">第 2 局 · 对局结束</span>
+              <h2>破译成功!</h2>
+              <div class="sub">破译者胜 · 用时 02:14 · 剩余 3 次</div>
+              <div class="answerline">
+                <span style="font-size:12px;color:var(--text-3);align-self:center;margin-right:4px">答案</span>
+                <span class="peg pc-purple"></span><span class="peg pc-orange"></span><span class="peg pc-blue"></span><span class="peg pc-yellow"></span>
+              </div>
+              <div style="display:flex;justify-content:center;align-items:center;gap:22px;margin:16px 0 4px">
+                <div><div style="font-family:var(--font-led);font-size:30px;font-weight:700;color:var(--text-2)">1</div><div style="font-size:11px;color:var(--text-3)">出题者</div></div>
+                <div style="font-size:20px;color:var(--text-3)">:</div>
+                <div><div style="font-family:var(--font-led);font-size:34px;font-weight:700;color:var(--amber);text-shadow:0 0 14px var(--glow-amber)">2</div><div style="font-size:11px;color:var(--text-3)">破译者</div></div>
+              </div>
+              <div class="btnrow">
+                <button class="btn btn-ghost">返回主菜单</button>
+                <button class="btn btn-primary">换边再来 ›</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption>
+        <div class="t"><span class="idx">S8</span>双人 · 结算</div>
+        <div class="d">揭示答案、本局用时与剩余次数,比分大数字展示;「换边再来」互换角色并累计比分(PRD FR-D5),呼应原型"从破译者变成出题者"。</div>
+      </figcaption>
+    </figure>
+
+    <!-- S9a 单人结算 · 成功 -->
+    <figure class="shot">
+      <div class="phone"><div class="buttons"></div><div class="screen">
+        <div class="content">
+          <div class="navbar">
+            <div class="side"><button class="icobtn">‹</button></div>
+            <div class="led">E-023</div>
+            <div class="side"><button class="icobtn accent">↻</button><button class="icobtn">♪</button></div>
+          </div>
+          <div class="rows" style="opacity:.75;padding-top:8px">
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg pc-purple"></span><span class="peg pc-orange"></span><span class="peg pc-blue"></span><span class="peg pc-white"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg pc-red"></span><span class="peg pc-green"></span><span class="peg pc-purple"></span><span class="peg pc-yellow"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg pc-green"></span><span class="peg pc-blue"></span><span class="peg pc-yellow"></span><span class="peg pc-red"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg pc-purple"></span><span class="peg pc-green"></span><span class="peg pc-blue"></span><span class="peg pc-yellow"></span></div></div></div>
+          </div>
+          <div class="confetti">
+            <i style="left:12%;background:var(--c-red);animation-duration:2.6s"></i>
+            <i style="left:24%;background:var(--c-blue);animation-duration:3.1s;animation-delay:.2s"></i>
+            <i style="left:37%;background:var(--c-yellow);animation-duration:2.8s;animation-delay:.1s"></i>
+            <i style="left:49%;background:var(--c-green);animation-duration:3.3s"></i>
+            <i style="left:61%;background:var(--c-purple);animation-duration:2.7s;animation-delay:.3s"></i>
+            <i style="left:73%;background:var(--c-white);animation-duration:3s;animation-delay:.15s"></i>
+            <i style="left:85%;background:var(--c-orange);animation-duration:2.9s;animation-delay:.05s"></i>
+            <i style="left:30%;background:var(--c-blue);animation-duration:3.4s;animation-delay:.5s"></i>
+            <i style="left:66%;background:var(--c-red);animation-duration:3.2s;animation-delay:.4s"></i>
+          </div>
+          <div class="overlay" style="background:rgba(5,8,12,.45)">
+            <div class="sheet">
+              <div class="stars-big"><i class="on">★</i><i class="on">★</i><i class="on">★</i></div>
+              <h2>破译成功!</h2>
+              <div class="sub">E-023 · 4 次破译 · 用时 01:23</div>
+              <div class="answerline">
+                <span style="font-size:12px;color:var(--text-3);align-self:center;margin-right:4px">答案</span>
+                <span class="peg pc-purple"></span><span class="peg pc-green"></span><span class="peg pc-blue"></span><span class="peg pc-yellow"></span>
+              </div>
+              <div class="btnrow">
+                <button class="btn btn-ghost">重玩</button>
+                <button class="btn btn-primary">下一关 ›</button>
+              </div>
+              <div style="margin-top:10px"><button class="btn btn-ghost" style="width:100%">返回选关</button></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption>
+        <div class="t"><span class="idx">S9</span>单人结算 · 成功(3 星)</div>
+        <div class="d">彩带 + 三星逐颗弹入;星级按破译次数结算(PRD FR-S4:≤2 次 3 星 / ≤4 次 2 星 / 其余 1 星);答案行展示,主按钮引导进入下一关。</div>
+      </figcaption>
+    </figure>
+
+    <!-- S9b 单人结算 · 失败 -->
+    <figure class="shot">
+      <div class="phone"><div class="buttons"></div><div class="screen">
+        <div class="content">
+          <div class="navbar">
+            <div class="side"><button class="icobtn">‹</button></div>
+            <div class="led">A-137</div>
+            <div class="side"><button class="icobtn accent">↻</button><button class="icobtn">♪</button></div>
+          </div>
+          <div class="rows" style="opacity:.75;padding-top:8px">
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg pc-white"></span><span class="peg pc-green"></span><span class="peg pc-yellow"></span><span class="peg pc-purple"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg pc-red"></span><span class="peg pc-blue"></span><span class="peg pc-orange"></span><span class="peg pc-purple"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg pc-orange"></span><span class="peg pc-white"></span><span class="peg pc-red"></span><span class="peg pc-green"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg pc-yellow"></span><span class="peg pc-blue"></span><span class="peg pc-red"></span><span class="peg pc-green"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg pc-green"></span><span class="peg pc-orange"></span><span class="peg pc-white"></span><span class="peg pc-blue"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg pc-blue"></span><span class="peg pc-red"></span><span class="peg pc-yellow"></span><span class="peg pc-orange"></span></div></div></div>
+            <div class="rowwrap"><div class="rowmain"><div class="rowcells"><span class="peg pc-purple"></span><span class="peg pc-white"></span><span class="peg pc-green"></span><span class="peg pc-red"></span></div></div></div>
+          </div>
+          <div class="overlay">
+            <div class="sheet">
+              <span class="tag" style="border-color:rgba(255,93,93,.35);color:var(--danger)">第 7 行 · 未破译</span>
+              <h2>差一步!</h2>
+              <div class="sub">密码机器咯咯笑了 —— 再试一次,你已经有不少线索了</div>
+              <div class="btnrow">
+                <button class="btn btn-primary">重试本关</button>
+                <button class="btn btn-ghost">查看答案</button>
+              </div>
+              <div style="margin-top:10px"><button class="btn btn-ghost" style="width:100%">返回选关</button></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption>
+        <div class="t"><span class="idx">S10</span>单人结算 · 失败</div>
+        <div class="d">儿童向文案弱化挫败感(PRD §4.10);默认提供「查看答案」,可在设置关闭以复刻原型"失败不揭示"的设计(PRD 开放问题 Q3)。</div>
+      </figcaption>
+    </figure>
+
+    <!-- S11 设置 -->
+    <figure class="shot">
+      <div class="phone"><div class="buttons"></div><div class="screen">
+        <div class="content" style="padding-top:8px">
+          <div class="navbar">
+            <div class="side"><button class="icobtn">‹</button></div>
+            <span class="ttl">设置</span>
+            <div class="side"></div>
+          </div>
+          <div class="list">
+            <div class="group-t">声音与反馈</div>
+            <div class="li"><span class="ico">♪</span><span>音效<div class="sub">打字机式机械按键音</div></span><span class="end"><span class="toggle on"></span></span></div>
+            <div class="li"><span class="ico">⊙</span><span>触觉反馈</span><span class="end"><span class="toggle on"></span></span></div>
+            <div class="group-t">辅助功能</div>
+            <div class="li">
+              <span class="ico">◈</span>
+              <span>色盲辅助符号<div class="sub">为每种颜色附加独特符号</div></span>
+              <span class="end"><span class="toggle"></span></span>
+            </div>
+            <div class="li"><span class="ico">〜</span><span>减弱动效</span><span class="end"><span class="toggle"></span></span></div>
+            <div class="group-t">游戏</div>
+            <div class="li"><span class="ico">👁</span><span>失败后显示答案<div class="sub">关闭后复刻原型:失败不揭示密码</div></span><span class="end"><span class="toggle on"></span></span></div>
+            <div class="li"><span class="ico">↻</span><span>重新播放教程</span><span class="end">›</span></div>
+            <div class="group-t">通用</div>
+            <div class="li"><span class="ico">🌐</span><span>语言</span><span class="end">跟随系统 ›</span></div>
+            <div class="li"><span class="ico">i</span><span>关于 · 致敬经典解谜机</span><span class="end">v0.1.0 ›</span></div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption>
+        <div class="t"><span class="idx">S11</span>设置</div>
+        <div class="d">与 PRD §4.9 一一对应;色盲符号开启后,所有色珠右下角叠加 ■▲●◆★✚✿ 水印,仅凭符号即可完整游玩(验收用例 A9)。</div>
+      </figcaption>
+    </figure>
+
+    <!-- S12 统计 -->
+    <figure class="shot">
+      <div class="phone"><div class="buttons"></div><div class="screen">
+        <div class="content" style="padding-top:8px">
+          <div class="navbar">
+            <div class="side"><button class="icobtn">‹</button></div>
+            <span class="ttl">统计</span>
+            <div class="side"></div>
+          </div>
+          <div class="statgrid" style="margin-top:6px">
+            <div class="statcard"><div class="v">128</div><div class="k">总局数</div></div>
+            <div class="statcard"><div class="v">78%</div><div class="k">胜率</div></div>
+            <div class="statcard"><div class="v">4.2</div><div class="k">平均破译步数</div></div>
+            <div class="statcard"><div class="v">9</div><div class="k">最高连胜</div></div>
+          </div>
+          <div class="card" style="margin-top:12px">
+            <div style="font-size:13px;color:var(--text-2);margin-bottom:10px">每日挑战 · 本周打卡</div>
+            <div class="week">
+              <span class="d"><i class="on">一</i></span>
+              <span class="d"><i class="on">二</i></span>
+              <span class="d"><i class="on">三</i></span>
+              <span class="d"><i class="on">四</i></span>
+              <span class="d"><i class="on">五</i></span>
+              <span class="d"><i>六</i></span>
+              <span class="d"><i>日</i></span>
+            </div>
+          </div>
+          <div class="card" style="margin-top:12px">
+            <div style="font-size:13px;color:var(--text-2)">章节进度</div>
+            <div style="margin:12px 0 6px;display:flex;justify-content:space-between;font-size:12px"><span>简单模式</span><span style="color:var(--text-3);font-family:var(--font-led)">23/100</span></div>
+            <div class="progressbar"><i style="width:23%"></i></div>
+            <div style="margin:14px 0 6px;display:flex;justify-content:space-between;font-size:12px"><span>进阶模式</span><span style="color:var(--text-3);font-family:var(--font-led)">14/500</span></div>
+            <div class="progressbar"><i style="width:3%"></i></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:12px">
+            <div class="statcard" style="flex:1"><div class="v">24</div><div class="k">3 星关卡</div></div>
+            <div class="statcard" style="flex:1"><div class="v">★ 86</div><div class="k">累计星数</div></div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption>
+        <div class="t"><span class="idx">S12</span>统计</div>
+        <div class="d">P1 功能的视觉预设(PRD §4.7):核心四指标 + 每日挑战打卡 + 章节进度;数值为示意。本地统计,无任何数据上报。</div>
+      </figcaption>
+    </figure>
+
+  </div>
+</section>
+
+<!-- ================= 04 可玩 DEMO ================= -->
+<section class="zone" id="demo">
+  <h2><span class="no">04</span>可玩 Demo<span class="desc">E-001 · 真实提示判定逻辑 · 可直接游玩</span></h2>
+  <div class="democtrl" style="margin-bottom:36px">
+    <span class="lab">提示形态</span>
+    <span class="seg" id="demoHintSeg"><button class="on" data-hint="direct">简单 · 直接提示</button><button data-hint="indirect">进阶 · 间接提示</button></span>
+    <span class="lab">色盲符号</span>
+    <span class="toggle" id="demoSym"></span>
+    <button class="btn btn-ghost slim" id="demoRestart" style="flex:none">↻ 重新开始</button>
+  </div>
+  <div class="gallery">
+    <figure class="shot">
+      <div class="phone demoframe"><div class="buttons"></div><div class="screen" id="demoScreen">
+        <div class="content" id="demoContent"><!-- demo.js 渲染 --></div>
+      </div></div>
+      <figcaption>
+        <div class="t"><span class="idx">DEMO</span>试玩 E-001</div>
+        <div class="d">点格子选中 → 点色盘填色,或在格子上按住上下拖动换色;填满 4 格后「确认」。谜面:起始线索 3 绿 1 空,2 次内必破。顶部开关可切换直接/间接提示形态对比手感,失败后可查看答案。</div>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<footer class="pagefoot">
+  <b>霓虹密码机 Neonigma · UI 设计稿</b> · Style A「霓虹灯珠」复古电子风 · 2026-10-01<br>
+  文件:design/index.html + css/tokens.css + css/main.css + js/demo.js · 纯 HTML/CSS/JS,无外部依赖,双击即可离线打开<br>
+  规格来源:docs/需求文档.md(§3 游戏规则 / §4 功能需求 / §6 视觉与音频)· 复刻原型:计客® 超级密码机(玩法参考,名称与美术均为原创,见 PRD §1.3 合规声明)
+</footer>
+
+<script>
+/* 手机框公共部件:灵动岛 / 状态栏 / Home 指示条 */
+const SB_HTML = `<div class="island"></div>
+<div class="statusbar"><span>9:41</span><span class="sb-r"><span class="sb-cell"><i></i><i></i><i></i><i></i></span><span class="sb-batt"></span></span></div>`;
+document.querySelectorAll('.screen').forEach(s => {
+  s.insertAdjacentHTML('afterbegin', SB_HTML);
+  s.insertAdjacentHTML('beforeend', '<div class="homebar"></div>');
+});
+/* 入场动效(?static=1 时跳过,便于截图/打印) */
+if (location.search.includes('static')) {
+  document.body.classList.add('static');
+  document.querySelectorAll('.shot, .tok-group').forEach(el => el.classList.add('in'));
+} else {
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .08 });
+  document.querySelectorAll('.shot, .tok-group').forEach(el => io.observe(el));
+}
+</script>
+<script src="js/demo.js"></script>
+</body>
+</html>
