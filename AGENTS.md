@@ -61,7 +61,7 @@ swift tools/gen_icon.swift --preview /tmp/icon.png    # 重新生成 App 图标(
 - **project.pbxproj 是 XML plist**,由 `tools/gen_pbxproj.py` 生成(标量必须全字符串、本地包用 `XCLocalSwiftPackageReference`+`relativePath`、包引用不得挂在主分组 children)。Xcode 打开保存后会改写为 OpenStep 格式——属正常;若工程描述损坏,改 python 脚本再 `python3 tools/gen_pbxproj.py` 重新生成,不要手补 OpenStep。
 - **levels.json、Sounds/*.wav、AppIcon icon-1024.png 是生成产物但随包入库**(确定性生成);改生成器后必须重跑对应工具并提交,CI 会 diff 关卡表字节一致性。
 - 图标生成脚本用 Quartz `noneSkipLast` 上下文保证 PNG 无 alpha(App Store 硬性要求);它依赖 macOS 宿主,故放 tools/ 而非 Core 包(ubuntu CI 会编译失败)。
-- 模拟器 runtime 仅有 iOS 26.5 / 27.0(最低支持 iOS 17 的真机回归待补 runtime)。
+- 模拟器 runtime:iOS 17.0 与 iOS 27.0(2026-10-01 起);最低版本回归用 iOS 17 设备(如 iPhone 15 / iPhone SE 3)。
 - 调试直进对局页:`xcrun simctl launch <udid> com.xrw67.neonigma -game 101`(App 的 `-game <1...600>` 启动参数钩子)。
 
 ## 其他
