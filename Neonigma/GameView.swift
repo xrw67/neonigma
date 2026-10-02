@@ -42,7 +42,7 @@ struct GameView: View {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(Theme.text2)
-                    .frame(width: 36, height: 36)
+                    .frame(width: 44, height: 44)
                     .background(RoundedRectangle(cornerRadius: 12).fill(Theme.panel)
                         .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Theme.line, lineWidth: 1)))
             }
@@ -55,7 +55,7 @@ struct GameView: View {
                 Image(systemName: "arrow.counterclockwise")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(Theme.amber)
-                    .frame(width: 36, height: 36)
+                    .frame(width: 44, height: 44)
                     .background(RoundedRectangle(cornerRadius: 12).fill(Theme.panel)
                         .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Theme.line, lineWidth: 1)))
             }
@@ -93,8 +93,7 @@ struct GameView: View {
         let color: Color
         func makeBody(configuration: Configuration) -> some View {
             HStack(spacing: 5) {
-                Circle().fill(color).frame(width: 8, height: 8)
-                    .shadow(color: color.opacity(0.5), radius: 3)
+                Circle().fill(color).overlay(Circle().strokeBorder(Theme.line, lineWidth: 1)).frame(width: 8, height: 8)
                 configuration.title
             }
         }
@@ -103,102 +102,71 @@ struct GameView: View {
     // MARK: 棋盘
 
     private var board: some View {
-        VStack(spacing: 9) {
-            ForEach(vm.rows.indices, id: \.self) { i in
-                submittedRow(vm.rows[i], index: i)
-            }
-            if vm.outcome == nil {
-                currentRow
-                ForEach(0..<ghostCount, id: \.self) { _ in ghostRow }
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-        .padding(.horizontal, 16)
-        .padding(.bottom, 6)
-    }
-
-    private var ghostCount: Int {
-        max(0, vm.maxGuesses + 1 - vm.rows.count - 1)
-    }
-
-    private var ghostRow: some View {
-        HStack(spacing: 10) {
-            ForEach(0..<4, id: \.self) { _ in
-                PegView(color: nil, ghost: true)
-            }
-        }
-        .opacity(0.5)
-    }
-
-    private func submittedRow(_ row: GameViewModel.RowState, index: Int) -> some View {
-        HStack(alignment: .center, spacing: 10) {
-            VStack(alignment: .leading, spacing: 6) {
-                if index == 0 {
-                    Text("第 1 行 · 起始线索")
-                        .font(.system(size: 10))
-                        .foregroundStyle(Theme.color(0x6BC1FF))
+        ScrollView {
+            VStack(spacing: 8) {
+                ForEach(0..<7, id: \.self) { index in
+                    boardRow(index)
                 }
+            }
+            .padding(10)
+            .background(RoundedRectangle(cornerRadius: 10).fill(Theme.board))
+            .frame(maxWidth: 390)
+            .frame(maxWidth: .infinity)
+        }
+        .padding(.horizontal, 16)
+        .padding(.bottom, 12)
+    }
+
+    private func boardRow(_ index: Int) -> some View {
+        let submitted = index < vm.rows.count
+        let editing = index == vm.rows.count && vm.outcome == nil
+        return HStack(spacing: 8) {
+            VStack(spacing: 2) {
+                Text("\(index + 1)").font(.system(size: 12, weight: .bold))
+                if index == 0 { Text("线索").font(.system(size: 9, weight: .bold)) }
+            }
+            .foregroundStyle(Theme.status)
+            .frame(width: 26)
+            VStack(spacing: 5) {
                 HStack(spacing: 10) {
-                    ForEach(row.guess.indices, id: \.self) { i in
-                        PegView(color: row.guess[i])
+                    ForEach(0..<4, id: \.self) { col in
+                        PegView(color: submitted ? vm.rows[index].guess[col] : (editing ? vm.current[col] : nil),
+                                selected: editing && vm.selected == col)
+                            .onTapGesture { if editing { vm.select(col) } }
                     }
                 }
                 if vm.isEasy {
-                    DirectHintDots(evaluation: row.evaluation, revealed: row.revealed)
-                }
-            }
-            Spacer(minLength: 0)
-            if !vm.isEasy {
-                IndirectBadge(evaluation: row.evaluation, revealed: row.revealed)
-            }
-        }
-        .padding(index == 0 ? 8 : 0)
-        .background {
-            if index == 0 {
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Theme.color(0x0091FF).opacity(0.05))
-                    .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Theme.color(0x0091FF).opacity(0.18), lineWidth: 1))
-            }
-        }
-    }
-
-    private var currentRow: some View {
-        HStack(alignment: .center, spacing: 10) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("第 \(vm.rows.count + 1) 行 · 编辑中")
-                    .font(.system(size: 10))
-                    .foregroundStyle(Theme.amber)
-                HStack(spacing: 10) {
-                    ForEach(0..<4, id: \.self) { i in
-                        PegView(color: vm.current[i], selected: vm.selected == i)
-                            .onTapGesture { vm.select(i) }
+                    if submitted {
+                        DirectHintDots(evaluation: vm.rows[index].evaluation, revealed: vm.rows[index].revealed)
+                    } else {
+                        Color.clear.frame(height: 9)
                     }
                 }
             }
-            Spacer(minLength: 0)
-            if !vm.isEasy {
-                IndirectBadge(evaluation: Evaluation(greens: 0, whites: 0, cells: []),
-                              revealed: 0, placeholder: true)
+            Group {
+                if !vm.isEasy && submitted {
+                    IndirectBadge(evaluation: vm.rows[index].evaluation, revealed: vm.rows[index].revealed)
+                } else {
+                    Color.clear
+                }
             }
+            .frame(width: 41, height: 41)
         }
-        .padding(8)
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Theme.amber.opacity(0.05))
-                .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Theme.amber.opacity(0.22), lineWidth: 1))
-        )
+        .padding(.vertical, 5)
+        .frame(maxWidth: .infinity)
+        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Theme.selection, lineWidth: editing ? 1.5 : 0))
     }
 
     // MARK: 输入区
 
     private var controls: some View {
         VStack(spacing: 14) {
-            HStack(spacing: 9) {
+            HStack(spacing: 0) {
                 ForEach(PegColor.allCases, id: \.self) { color in
                     Button {
                         vm.fill(color)
                     } label: {
-                        PegView(color: color, size: 40)
+                        PegView(color: color, size: 40).frame(width: 44, height: 44)
                     }
                     .buttonStyle(.plain)
                     .disabled(vm.locked || vm.outcome != nil)
@@ -274,11 +242,11 @@ struct GameView: View {
         .frame(maxWidth: .infinity)
         .background(
             Rectangle()
-                .fill(LinearGradient(colors: [Theme.color(0x1A202A), Theme.color(0x12161D)],
-                                     startPoint: .top, endPoint: .bottom))
+                .fill(Theme.bg)
                 .ignoresSafeArea()
         )
-        .presentationDetents([.height(360)])
+        .presentationDetents([.medium, .large])
+        .presentationBackground(Theme.bg)
     }
 
     private var answerLine: some View {

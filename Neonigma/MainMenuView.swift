@@ -4,7 +4,6 @@ import Core
 /// 主菜单(VDD S3):浮动 logo + 继续闯关(第一入口)+ 三模式卡。
 /// M1 范围:单人闯关可用;双人为 M2、每日挑战为 P1,置灰占位。
 struct MainMenuView: View {
-    @State private var bobbing = false
 
     var body: some View {
         ScrollView {
@@ -14,17 +13,17 @@ struct MainMenuView: View {
                     .padding(.bottom, 24)
                 VStack(spacing: 12) {
                     continueCard
-                    modeCard(icon: "target", tint: Theme.color(0x8BD39A),
-                             bg: Theme.color(0x46A758).opacity(0.14),
+                    modeCard(icon: "target", tint: Theme.text2,
+                             bg: Theme.panel2,
                              title: "单人闯关") {
                         LevelSelectView()
                     }
-                    disabledCard(icon: "person.2.fill", tint: Theme.color(0xC493F0),
-                                 bg: Theme.color(0x8E4EC6).opacity(0.16),
+                    disabledCard(icon: "person.2.fill", tint: Theme.text2,
+                                 bg: Theme.panel2,
                                  title: "双人对战",
                                  tag: "M2")
-                    disabledCard(icon: "calendar", tint: Theme.color(0xFFD37A),
-                                 bg: Theme.amber.opacity(0.14),
+                    disabledCard(icon: "calendar", tint: Theme.text2,
+                                 bg: Theme.panel2,
                                  title: "每日挑战",
                                  tag: "P1")
                 }
@@ -48,12 +47,9 @@ struct MainMenuView: View {
             HStack(spacing: 8) {
                 ForEach(Array([PegColor.red, .blue, .purple, .yellow].enumerated()), id: \.offset) { i, c in
                     PegView(color: c, size: 34)
-                        .offset(y: bobbing ? -5 : 4)
-                        .animation(.easeInOut(duration: 1.3).repeatForever(autoreverses: true)
-                            .delay(Double(i) * 0.2), value: bobbing)
+
                 }
             }
-            .onAppear { bobbing = true }
             Text("霓虹密码机")
                 .font(.system(size: 34, weight: .heavy, design: .rounded))
                 .foregroundStyle(Theme.text1)
@@ -67,11 +63,9 @@ struct MainMenuView: View {
     /// M1 占位:进度持久化(SwiftData)属 M2,先固定进入 E-001。
     private var continueCard: some View {
         NavigationLink(value: LevelStore.level(id: 1)) {
-            modeCardLabel(icon: "play.fill", tint: Theme.color(0x6BC1FF),
-                          bg: Theme.color(0x0091FF).opacity(0.15),
-                          title: "继续闯关 · E-001",
-                          accent: LinearGradient(colors: [Theme.color(0x0091FF).opacity(0.12), Theme.color(0x8E4EC6).opacity(0.10)],
-                                                 startPoint: .topLeading, endPoint: .bottomTrailing)) {
+            modeCardLabel(icon: "play.fill", tint: Theme.text2,
+                          bg: Theme.panel2,
+                          title: "继续闯关 · E-001") {
                 Image(systemName: "chevron.right").foregroundStyle(Theme.text3)
             }
         }
@@ -100,19 +94,17 @@ struct MainMenuView: View {
                 .padding(.horizontal, 8).padding(.vertical, 3)
                 .background(Capsule().strokeBorder(Theme.line, lineWidth: 1))
         }
-        .opacity(0.55)
     }
 
     private func modeCardLabel<Trailing: View>(icon: String, tint: Color, bg: Color,
                                                title: String,
-                                               accent: LinearGradient? = nil,
                                                @ViewBuilder trailing: @escaping () -> Trailing) -> some View {
         HStack(spacing: 14) {
             Image(systemName: icon)
                 .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(tint)
                 .frame(width: 46, height: 46)
-                .background(RoundedRectangle(cornerRadius: 14).fill(bg))
+                .background(RoundedRectangle(cornerRadius: 8).fill(bg))
             Text(title)
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(Theme.text1)
@@ -121,15 +113,9 @@ struct MainMenuView: View {
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: 10)
                 .fill(Theme.panel)
-                .overlay {
-                    if let accent {
-                        RoundedRectangle(cornerRadius: 18).fill(accent)
-                    }
-                }
-                .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(Theme.line.opacity(0.6), lineWidth: 1))
-                .shadow(color: .black.opacity(0.35), radius: 12, y: 6)
+                .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Theme.line.opacity(0.6), lineWidth: 1))
         )
     }
 }

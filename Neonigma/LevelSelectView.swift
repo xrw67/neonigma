@@ -48,6 +48,8 @@ struct LevelSelectView: View {
                         .buttonStyle(.plain)
                     }
                 }
+                .padding(10)
+                .background(RoundedRectangle(cornerRadius: 10).fill(Theme.board))
                 .padding(.horizontal, 16)
                 .padding(.bottom, 30)
             }
@@ -60,16 +62,16 @@ struct LevelSelectView: View {
         VStack(spacing: 2) {
             Text(shortID(level))
                 .font(.system(size: 13, weight: .bold, design: .monospaced))
-                .foregroundStyle(Theme.text2)
+                .foregroundStyle(Theme.text1)
             StarsView(count: 0)
                 .font(.system(size: 9))
         }
         .frame(maxWidth: .infinity)
         .aspectRatio(1, contentMode: .fit)
         .background(
-            RoundedRectangle(cornerRadius: 13)
-                .fill(Theme.panel)
-                .overlay(RoundedRectangle(cornerRadius: 13).strokeBorder(Theme.line.opacity(0.6), lineWidth: 1))
+            RoundedRectangle(cornerRadius: 6)
+                .fill(Theme.bg)
+                .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Theme.line.opacity(0.6), lineWidth: 1))
         )
     }
 

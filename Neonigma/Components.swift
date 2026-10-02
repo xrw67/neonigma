@@ -2,7 +2,7 @@ import SwiftUI
 import Core
 
 /// 色珠(VDD §4.1):空槽 / 填充 / 选中 / 幽灵 四态。
-/// 填充 = base 底 + 顶部釉面高光 + 底部压暗 + 辉光;选中 = 琥珀描边 + 呼吸。
+/// 填充为柔和纯色,选中为深棕描边。
 struct PegView: View {
     let color: PegColor?
     var size: CGFloat = Theme.pegSize
@@ -10,41 +10,18 @@ struct PegView: View {
     var ghost = false
 
     var body: some View {
-        let corner = size * 12 / 44
-        ZStack {
-            if let color {
-                RoundedRectangle(cornerRadius: corner, style: .continuous)
-                    .fill(Theme.pegBase(color))
-                    .overlay(
-                        LinearGradient(colors: [.white.opacity(0.32), .clear],
-                                       startPoint: .top, endPoint: UnitPoint(x: 0.5, y: 0.52))
-                            .clipShape(RoundedRectangle(cornerRadius: corner, style: .continuous))
-                    )
-                    .overlay(alignment: .bottom) {
-                        LinearGradient(colors: [.clear, .black.opacity(0.3)],
-                                       startPoint: .top, endPoint: .bottom)
-                            .frame(height: size * 0.45)
-                            .clipShape(RoundedRectangle(cornerRadius: corner, style: .continuous))
-                    }
-                    .shadow(color: Theme.pegBase(color).opacity(0.45), radius: size * 0.36)
-            } else {
-                RoundedRectangle(cornerRadius: corner, style: .continuous)
-                    .fill(Theme.well)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: corner, style: .continuous)
-                            .strokeBorder(.white.opacity(0.07), lineWidth: 1.5)
-                    )
+        let corner = size * 6 / 44
+        RoundedRectangle(cornerRadius: corner)
+            .fill(color.map(Theme.pegBase) ?? Theme.well)
+            .overlay(RoundedRectangle(cornerRadius: corner).strokeBorder(Theme.line.opacity(color == .white ? 1 : 0), lineWidth: 1))
+            .frame(width: size, height: size)
+            .overlay {
+                if selected {
+                    RoundedRectangle(cornerRadius: corner + 3)
+                        .strokeBorder(Theme.selection, lineWidth: 2.5)
+                        .padding(-3)
+                }
             }
-        }
-        .frame(width: size, height: size)
-        .opacity(ghost ? 0.5 : 1)
-        .overlay {
-            if selected {
-                RoundedRectangle(cornerRadius: corner + 3, style: .continuous)
-                    .strokeBorder(Theme.amber, lineWidth: 2.5)
-                    .padding(-3)
-            }
-        }
     }
 }
 
@@ -76,8 +53,8 @@ struct HintDot: View {
     var body: some View {
         Circle()
             .fill(fill)
+            .overlay(Circle().strokeBorder(Theme.line, lineWidth: state == .wt ? 1 : 0))
             .frame(width: 9, height: 9)
-            .shadow(color: glow, radius: 4)
     }
     private var fill: Color {
         switch state {
@@ -86,13 +63,7 @@ struct HintDot: View {
         case .off: Theme.hintOff
         }
     }
-    private var glow: Color {
-        switch state {
-        case .on: Theme.hintOn.opacity(0.55)
-        case .wt: Theme.hintWt.opacity(0.5)
-        case .off: .clear
-        }
-    }
+
 }
 
 /// 间接提示徽章(VDD §4.4,2026-10-01 定稿):固定 2×2 槽位、约 41×41,
@@ -136,11 +107,11 @@ struct IndirectBadge: View {
                 .fill(Theme.panel2)
                 .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Theme.line, lineWidth: 1))
         )
-        .opacity(placeholder ? 0.5 : 1)
+
     }
 }
 
-/// LED 数字屏(VDD §4.8):等宽 + 琥珀 + 辉光。
+/// LED 数字屏(VDD §4.8):等宽 + 琥珀纯色。
 struct LEDView: View {
     let text: String
     var small = false
@@ -150,35 +121,30 @@ struct LEDView: View {
         Text(text)
             .font(.system(size: small ? 12 : 15, weight: .bold, design: .monospaced))
             .kerning(1.5)
-            .foregroundColor(danger ? Theme.danger : Theme.amber)
+            .foregroundColor(danger ? Theme.hintWt : Theme.bg)
             .padding(.horizontal, small ? 10 : 14)
             .padding(.vertical, small ? 3 : 5)
             .background(
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(Theme.color(0x0A0D12))
+                    .fill(danger ? Theme.danger : Theme.status)
                     .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Theme.line, lineWidth: 1))
             )
-            .shadow(color: (danger ? Theme.danger : Theme.amber).opacity(0.35), radius: 8)
     }
 }
 
-/// 主按钮(琥珀渐变)/ 次按钮(面板底)VDD §4.6。
+/// 主按钮(琥珀纯色)/ 次按钮(面板底)VDD §4.6。
 struct PrimaryButtonStyle: ButtonStyle {
     var disabled = false
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 16, weight: .heavy, design: .rounded))
-            .foregroundStyle(disabled ? Theme.text3 : Theme.color(0x1A1204))
+            .foregroundStyle(disabled ? Theme.text3 : Theme.text1)
             .frame(maxWidth: .infinity)
             .frame(height: 52)
             .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(LinearGradient(colors: [Theme.color(0xFFD37A), Theme.amber, Theme.color(0xB26E00)],
-                                         startPoint: .top, endPoint: .bottom))
-                    .opacity(disabled ? 0.25 : 1)
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(disabled ? Theme.panel2 : Theme.amber)
             )
-            .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(.white.opacity(disabled ? 0 : 0.35), lineWidth: 1))
-            .shadow(color: Theme.amber.opacity(disabled ? 0 : 0.3), radius: 10, y: 4)
             .scaleEffect(configuration.isPressed ? 0.97 : 1)
             .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
@@ -192,9 +158,9 @@ struct GhostButtonStyle: ButtonStyle {
             .frame(maxWidth: .infinity)
             .frame(height: 52)
             .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(Theme.panel)
-                    .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Theme.line, lineWidth: 1))
+                    .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Theme.line, lineWidth: 1))
             )
             .scaleEffect(configuration.isPressed ? 0.97 : 1)
             .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
@@ -212,7 +178,6 @@ struct StarsView: View {
                 Text("★")
                     .font(.system(size: big ? 34 : 13, weight: .black))
                     .foregroundStyle(i < count ? Theme.star : Theme.hintOff)
-                    .shadow(color: i < count ? Theme.star.opacity(0.5) : .clear, radius: big ? 10 : 4)
             }
         }
     }

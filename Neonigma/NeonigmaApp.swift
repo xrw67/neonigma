@@ -21,7 +21,7 @@ struct NeonigmaApp: App {
                     MainMenuView()
                 }
             }
-            .preferredColorScheme(.dark)
+            .preferredColorScheme(.light)
             .tint(Theme.amber)
         }
     }
