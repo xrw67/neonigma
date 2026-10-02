@@ -1,0 +1,64 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:Neonigma}/Core",
+            "name": "Debug Validate (Core)",
+            "target": "Validate",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug Validate (Core)"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:Neonigma}/Core",
+            "name": "Release Validate (Core)",
+            "target": "Validate",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release Validate (Core)"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:Neonigma}/Core",
+            "name": "Debug GenSounds (Core)",
+            "target": "GenSounds",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug GenSounds (Core)"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:Neonigma}/Core",
+            "name": "Release GenSounds (Core)",
+            "target": "GenSounds",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release GenSounds (Core)"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:Neonigma}/Core",
+            "name": "Debug GenLevels (Core)",
+            "target": "GenLevels",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug GenLevels (Core)"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:Neonigma}/Core",
+            "name": "Release GenLevels (Core)",
+            "target": "GenLevels",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release GenLevels (Core)"
+        }
+    ]
+}

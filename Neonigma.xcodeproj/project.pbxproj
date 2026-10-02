@@ -10,6 +10,19 @@
 	<dict/>
 	<key>objects</key>
 	<dict>
+		<key>0000000000000000000000A4</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>explicitFileType</key>
+			<string>wrapper.application</string>
+			<key>includeInIndex</key>
+			<string>0</string>
+			<key>path</key>
+			<string>Neonigma.app</string>
+			<key>sourceTree</key>
+			<string>BUILT_PRODUCTS_DIR</string>
+		</dict>
 		<key>0000000000000000000000B0</key>
 		<dict>
 			<key>isa</key>

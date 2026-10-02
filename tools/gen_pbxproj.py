@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
-"""生成 Neonigma.xcodeproj/project.pbxproj(Xcode 16+ 同步文件夹式工程,XML plist 格式)。
+"""生成 Neonigma.xcodeproj/project.pbxproj(Xcode 27 同步文件夹式工程,XML plist 格式)。
 注意:pbxproj 的 legacy unarchiver 要求所有标量均为字符串;Xcode 打开后会改写为 OpenStep 格式。"""
 
 import plistlib
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+PROJECT = ROOT / "Neonigma.xcodeproj"
+PROJECT.mkdir(parents=True, exist_ok=True)
 
 A1 = "0000000000000000000000A1"  # PBXProject
 A2 = "0000000000000000000000A2"  # mainGroup
@@ -55,6 +60,8 @@ DEBUG = {**COMMON, "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "DEBUG", "ONLY_ACTIVE_
 RELEASE = {**COMMON, "ENABLE_NS_ASSERTIONS": "NO", "VALIDATE_PRODUCT": "YES", "ONLY_ACTIVE_ARCH": "NO"}
 
 objects = {
+    A4: {"isa": "PBXFileReference", "explicitFileType": "wrapper.application",
+         "includeInIndex": "0", "path": "Neonigma.app", "sourceTree": "BUILT_PRODUCTS_DIR"},
     B0: {"isa": "PBXBuildFile", "productRef": B1},
     A5: {"isa": "PBXFileSystemSynchronizedRootGroup", "path": "Neonigma", "sourceTree": "<group>"},
     A6: {"isa": "PBXFrameworksBuildPhase", "buildActionMask": "2147483647",
@@ -111,7 +118,7 @@ plist = {
     "rootObject": A1,
 }
 
-with open("Neonigma.xcodeproj/project.pbxproj", "wb") as f:
+with open(PROJECT / "project.pbxproj", "wb") as f:
     plistlib.dump(plist, f, fmt=plistlib.FMT_XML, sort_keys=False)
 
 # ---------- 共享 Scheme(保证 ⌘R 的 Run 动作存在且指向 App target) ----------
@@ -199,7 +206,7 @@ SCHEME = f"""<?xml version="1.0" encoding="UTF-8"?>
 </Scheme>
 """
 
-scheme_dir = "Neonigma.xcodeproj/xcshareddata/xcschemes"
+scheme_dir = PROJECT / "xcshareddata/xcschemes"
 os.makedirs(scheme_dir, exist_ok=True)
 with open(os.path.join(scheme_dir, "Neonigma.xcscheme"), "w") as f:
     f.write(SCHEME)
