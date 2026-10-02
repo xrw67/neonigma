@@ -16,16 +16,16 @@ struct MainMenuView: View {
                     continueCard
                     modeCard(icon: "target", tint: Theme.color(0x8BD39A),
                              bg: Theme.color(0x46A758).opacity(0.14),
-                             title: "单人闯关", subtitle: "简单 100 关 + 进阶 500 关,自由跳关") {
+                             title: "单人闯关") {
                         LevelSelectView()
                     }
                     disabledCard(icon: "person.2.fill", tint: Theme.color(0xC493F0),
                                  bg: Theme.color(0x8E4EC6).opacity(0.16),
-                                 title: "双人对战", subtitle: "面对面出题 × 破译,支持限时",
+                                 title: "双人对战",
                                  tag: "M2")
                     disabledCard(icon: "calendar", tint: Theme.color(0xFFD37A),
                                  bg: Theme.amber.opacity(0.14),
-                                 title: "每日挑战", subtitle: "全网同题 · 打卡纪录",
+                                 title: "每日挑战",
                                  tag: "P1")
                 }
                 .padding(.horizontal, 16)
@@ -69,7 +69,7 @@ struct MainMenuView: View {
         NavigationLink(value: LevelStore.level(id: 1)) {
             modeCardLabel(icon: "play.fill", tint: Theme.color(0x6BC1FF),
                           bg: Theme.color(0x0091FF).opacity(0.15),
-                          title: "继续闯关 · E-001", subtitle: "简单模式 · M1 版本",
+                          title: "继续闯关 · E-001",
                           accent: LinearGradient(colors: [Theme.color(0x0091FF).opacity(0.12), Theme.color(0x8E4EC6).opacity(0.10)],
                                                  startPoint: .topLeading, endPoint: .bottomTrailing)) {
                 Image(systemName: "chevron.right").foregroundStyle(Theme.text3)
@@ -79,12 +79,12 @@ struct MainMenuView: View {
     }
 
     private func modeCard<Destination: View>(icon: String, tint: Color, bg: Color,
-                                             title: String, subtitle: String,
+                                             title: String,
                                              @ViewBuilder destination: @escaping () -> Destination) -> some View {
         NavigationLink {
             destination()
         } label: {
-            modeCardLabel(icon: icon, tint: tint, bg: bg, title: title, subtitle: subtitle) {
+            modeCardLabel(icon: icon, tint: tint, bg: bg, title: title) {
                 Image(systemName: "chevron.right").foregroundStyle(Theme.text3)
             }
         }
@@ -92,8 +92,8 @@ struct MainMenuView: View {
     }
 
     private func disabledCard(icon: String, tint: Color, bg: Color,
-                              title: String, subtitle: String, tag: String) -> some View {
-        modeCardLabel(icon: icon, tint: tint, bg: bg, title: title, subtitle: subtitle) {
+                              title: String, tag: String) -> some View {
+        modeCardLabel(icon: icon, tint: tint, bg: bg, title: title) {
             Text(tag)
                 .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(Theme.text3)
@@ -104,7 +104,7 @@ struct MainMenuView: View {
     }
 
     private func modeCardLabel<Trailing: View>(icon: String, tint: Color, bg: Color,
-                                               title: String, subtitle: String,
+                                               title: String,
                                                accent: LinearGradient? = nil,
                                                @ViewBuilder trailing: @escaping () -> Trailing) -> some View {
         HStack(spacing: 14) {
@@ -113,10 +113,9 @@ struct MainMenuView: View {
                 .foregroundStyle(tint)
                 .frame(width: 46, height: 46)
                 .background(RoundedRectangle(cornerRadius: 14).fill(bg))
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title).font(.system(size: 16, weight: .bold)).foregroundStyle(Theme.text1)
-                Text(subtitle).font(.system(size: 12)).foregroundStyle(Theme.text3)
-            }
+            Text(title)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(Theme.text1)
             Spacer()
             trailing()
         }
