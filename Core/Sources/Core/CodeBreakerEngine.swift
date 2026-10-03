@@ -21,7 +21,7 @@ public struct Evaluation: Equatable, Sendable {
 
 /// 规则引擎(纯函数,PRD §3.4):
 /// 第一遍记对位(绿)并消费;第二遍从左到右为剩余格配错位(白)并消费;其余为灭。
-/// 与 design/js/demo.js 的 evaluate 逐行为一致,二者互为对照实现。
+/// 通过全枚举测试验证直接/间接提示等价,旧静态 Demo 已移除。
 public enum CodeBreakerEngine {
 
     public static func evaluate(code: [PegColor], guess: [PegColor]) -> Evaluation {

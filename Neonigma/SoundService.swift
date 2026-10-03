@@ -22,7 +22,15 @@ import AVFoundation
         }
     }
 
+    private var enabled = true
+
+    func setEnabled(_ value: Bool) {
+        enabled = value
+        if !value { players.values.forEach { $0.stop() } }
+    }
+
     func play(_ effect: Effect) {
+        guard enabled else { return }
         guard let player = players[effect] else { return }
         player.currentTime = 0
         player.play()

@@ -56,7 +56,7 @@ COMMON = {
     "SWIFT_VERSION": "6.0",
     "TARGETED_DEVICE_FAMILY": "1,2",
 }
-DEBUG = {**COMMON, "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "DEBUG", "ONLY_ACTIVE_ARCH": "YES"}
+DEBUG = {**COMMON, "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "DEBUG", "ONLY_ACTIVE_ARCH": "YES", "ENABLE_TESTABILITY": "YES", "SWIFT_OPTIMIZATION_LEVEL": "-Onone"}
 RELEASE = {**COMMON, "ENABLE_NS_ASSERTIONS": "NO", "VALIDATE_PRODUCT": "YES", "ONLY_ACTIVE_ARCH": "NO"}
 
 objects = {
@@ -109,6 +109,38 @@ objects = {
          "defaultConfigurationIsVisible": "0", "defaultConfigurationName": "Release"},
     B1: {"isa": "XCSwiftPackageProductDependency", "package": B2, "productName": "Core"},
 }
+
+# App 测试使用宿主,UI 测试通过独立进程控制应用;同步文件夹不混入 App。
+TEST_TARGETS = []
+for index, (name, kind) in enumerate([("NeonigmaTests", "unit-test"), ("NeonigmaUITests", "ui-testing")]):
+    base = 0xC0 + index * 0x20
+    ids = [f"{base + n:024X}" for n in range(12)]
+    target, group, product, sources, frameworks, config_list, debug, release, proxy, dependency, package, build = ids
+    objects[group] = {"isa": "PBXFileSystemSynchronizedRootGroup", "path": name, "sourceTree": "<group>"}
+    objects[product] = {"isa": "PBXFileReference", "explicitFileType": "wrapper.cfbundle", "path": name + ".xctest", "sourceTree": "BUILT_PRODUCTS_DIR"}
+    objects[sources] = {"isa": "PBXSourcesBuildPhase", "buildActionMask": "2147483647", "files": [], "runOnlyForDeploymentPostprocessing": "0"}
+    objects[frameworks] = {"isa": "PBXFrameworksBuildPhase", "buildActionMask": "2147483647", "files": [build], "runOnlyForDeploymentPostprocessing": "0"}
+    objects[package] = {"isa": "XCSwiftPackageProductDependency", "package": B2, "productName": "Core"}
+    objects[build] = {"isa": "PBXBuildFile", "productRef": package}
+    objects[proxy] = {"isa": "PBXContainerItemProxy", "containerPortal": A1, "proxyType": "1", "remoteGlobalIDString": A9, "remoteInfo": "Neonigma"}
+    objects[dependency] = {"isa": "PBXTargetDependency", "target": A9, "targetProxy": proxy}
+    for config, label in [(debug, "Debug"), (release, "Release")]:
+        settings = {**COMMON, "PRODUCT_NAME": name, "PRODUCT_BUNDLE_IDENTIFIER": "com.xrw67." + name,
+                    "SWIFT_DEFAULT_ACTOR_ISOLATION": "nonisolated", "ENABLE_TESTABILITY": "YES", "ONLY_ACTIVE_ARCH": "YES", "SWIFT_OPTIMIZATION_LEVEL": "-Onone", "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "DEBUG" if label == "Debug" else ""}
+        settings.pop("ASSETCATALOG_COMPILER_APPICON_NAME", None)
+        if kind == "unit-test":
+            settings.update({"TEST_HOST": "$(BUILT_PRODUCTS_DIR)/Neonigma.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Neonigma", "BUNDLE_LOADER": "$(TEST_HOST)"})
+        else:
+            settings["TEST_TARGET_NAME"] = "Neonigma"
+        objects[config] = {"isa": "XCBuildConfiguration", "buildSettings": settings, "name": label}
+    objects[config_list] = {"isa": "XCConfigurationList", "buildConfigurations": [debug, release], "defaultConfigurationIsVisible": "0", "defaultConfigurationName": "Release"}
+    objects[target] = {"isa": "PBXNativeTarget", "name": name, "productName": name, "productType": "com.apple.product-type.bundle." + kind,
+                       "productReference": product, "buildConfigurationList": config_list, "buildPhases": [sources, frameworks], "buildRules": [],
+                       "dependencies": [dependency], "fileSystemSynchronizedGroups": [group], "packageProductDependencies": [package]}
+    objects[A1]["targets"].append(target)
+    objects[A2]["children"].append(group)
+    objects[A3]["children"].append(product)
+    TEST_TARGETS.append((target, name))
 
 plist = {
     "archiveVersion": "1",
@@ -205,6 +237,11 @@ SCHEME = f"""<?xml version="1.0" encoding="UTF-8"?>
    </ArchiveAction>
 </Scheme>
 """
+
+testables = "\n".join(f'''        <TestableReference skipped="NO">
+          <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="{target}" BuildableName="{name}.xctest" BlueprintName="{name}" ReferencedContainer="container:Neonigma.xcodeproj" />
+        </TestableReference>''' for target, name in TEST_TARGETS)
+SCHEME = SCHEME.replace("      <Testables>\n", "      <Testables>\n" + testables + "\n")
 
 scheme_dir = PROJECT / "xcshareddata/xcschemes"
 os.makedirs(scheme_dir, exist_ok=True)

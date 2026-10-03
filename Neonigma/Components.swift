@@ -27,6 +27,7 @@ struct PegView: View {
 
 /// 直接提示行(VDD §4.3):4 槽与棋盘四列对齐,逐格三态。
 struct DirectHintDots: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let evaluation: Evaluation
     var revealed: Int = 4
 
@@ -41,7 +42,7 @@ struct DirectHintDots: View {
                                 .transition(.scale(scale: 0.3).combined(with: .opacity))
                         }
                     }
-                    .animation(.spring(duration: 0.35).delay(Double(i) * 0.05), value: revealed)
+                    .animation(reduceMotion ? nil : .spring(duration: 0.35).delay(Double(i) * 0.05), value: revealed)
             }
         }
     }
@@ -69,6 +70,7 @@ struct HintDot: View {
 /// 间接提示徽章(VDD §4.4,2026-10-01 定稿):固定 2×2 槽位、约 41×41,
 /// 绿先白后按行主序点亮;点数不足的位置保持空(不渲染灭点)。
 struct IndirectBadge: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let evaluation: Evaluation
     var revealed: Int = 4
     /// 当前编辑行的低透明度占位(4 个灭点)。
@@ -96,7 +98,7 @@ struct IndirectBadge: View {
                             }
                         }
                         .frame(width: 9, height: 9)
-                        .animation(.spring(duration: 0.35).delay(Double(idx) * 0.05), value: revealed)
+                        .animation(reduceMotion ? nil : .spring(duration: 0.35).delay(Double(idx) * 0.05), value: revealed)
                     }
                 }
             }
@@ -137,10 +139,11 @@ struct PrimaryButtonStyle: ButtonStyle {
     var disabled = false
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 16, weight: .heavy, design: .rounded))
+            .font(.headline)
             .foregroundStyle(disabled ? Theme.text3 : Theme.text1)
             .frame(maxWidth: .infinity)
-            .frame(height: 52)
+            .padding(.vertical, 12)
+            .frame(minHeight: 52)
             .background(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(disabled ? Theme.panel2 : Theme.amber)
@@ -153,10 +156,11 @@ struct PrimaryButtonStyle: ButtonStyle {
 struct GhostButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 16, weight: .heavy, design: .rounded))
+            .font(.headline)
             .foregroundStyle(Theme.text2)
             .frame(maxWidth: .infinity)
-            .frame(height: 52)
+            .padding(.vertical, 12)
+            .frame(minHeight: 52)
             .background(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(Theme.panel)
@@ -164,21 +168,5 @@ struct GhostButtonStyle: ButtonStyle {
             )
             .scaleEffect(configuration.isPressed ? 0.97 : 1)
             .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
-    }
-}
-
-/// 星级(FR-S4:≤2 次 3 星 / ≤4 次 2 星 / 其余 1 星)。
-struct StarsView: View {
-    let count: Int
-    var big = false
-
-    var body: some View {
-        HStack(spacing: big ? 8 : 2) {
-            ForEach(0..<3, id: \.self) { i in
-                Text("★")
-                    .font(.system(size: big ? 34 : 13, weight: .black))
-                    .foregroundStyle(i < count ? Theme.star : Theme.hintOff)
-            }
-        }
     }
 }

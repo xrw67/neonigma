@@ -28,6 +28,12 @@
       selectedLauncherIdentifier = "Xcode.Debugger"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+        <TestableReference skipped="NO">
+          <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="0000000000000000000000C0" BuildableName="NeonigmaTests.xctest" BlueprintName="NeonigmaTests" ReferencedContainer="container:Neonigma.xcodeproj" />
+        </TestableReference>
+        <TestableReference skipped="NO">
+          <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="0000000000000000000000E0" BuildableName="NeonigmaUITests.xctest" BlueprintName="NeonigmaUITests" ReferencedContainer="container:Neonigma.xcodeproj" />
+        </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

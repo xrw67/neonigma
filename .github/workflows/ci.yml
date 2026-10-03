@@ -37,3 +37,18 @@ jobs:
           xcodebuild -project Neonigma.xcodeproj -scheme Neonigma \
             -destination 'generic/platform=iOS Simulator' \
             -configuration Debug CODE_SIGNING_ALLOWED=NO build 2>&1 | tail -40
+
+      - name: App 单元测试与 UI 冒烟
+        run: |
+          set -o pipefail
+          xcodebuild -project Neonigma.xcodeproj -scheme Neonigma \
+            -destination 'platform=iOS Simulator,name=iPhone 17' \
+            -configuration Debug -parallel-testing-enabled NO \
+            -collect-test-diagnostics never -resultBundlePath /tmp/M2.xcresult \
+            CODE_SIGNING_ALLOWED=NO test 2>&1 | tail -80
+      - name: 保存测试结果
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: M2-test-results
+          path: /tmp/M2.xcresult

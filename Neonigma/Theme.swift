@@ -29,7 +29,6 @@ enum Theme {
     // MARK: 功能色(§3.5)
     static let amber = color(0xE85D3F)
     static let danger = color(0xB83F2D)
-    static let star = color(0x967016)
 
     // MARK: 密码七色 纯色
     static func pegBase(_ c: PegColor) -> Color {

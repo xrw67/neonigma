@@ -1,260 +1,218 @@
 import SwiftUI
 import Core
 
-/// 对局页(VDD §6 基准栅格):
-/// navbar → chipline → 图例 → 棋盘(底部对齐)→ 调色盘 → 按钮行。
 struct GameView: View {
-    @State private var vm: GameViewModel
-    @State private var sheetPresented = false
-    @Environment(\.dismiss) private var dismiss
+    @Bindable var vm: GameViewModel
+    let allowAnswer: Bool
+    var onExit: () -> Void
+    var onSelection: (() -> Void)? = nil
+    var onNext: (() -> Void)? = nil
+    var duoSummary: String? = nil
+    var onSwap: (() -> Void)? = nil
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var resultPresented = false
+    @State private var exitPrompt = false
+    @State private var restartPrompt = false
+    @State private var paused = false
 
-    init(level: Level) {
-        _vm = State(initialValue: GameViewModel(level: level))
-    }
-
+    private var isDuo: Bool { vm.configuration.kind == .duo }
     var body: some View {
-        VStack(spacing: 0) {
-            navbar
-            chipline
-            if !vm.isEasy { legend }
-            board
-            controls
+        ZStack {
+            if !paused {
+            VStack(spacing: 10) {
+                navbar
+                HStack {
+                    Text(vm.isEasy ? "直接提示" : "间接提示")
+                    Spacer()
+                    Text("已用 \(vm.guessesUsed)/\(vm.maxGuesses) 次")
+                }.font(.subheadline).padding(.horizontal, 16)
+                if !vm.isEasy {
+                    Text("绿:对位个数 · 白:错位个数 · 只报数量")
+                        .font(.caption).foregroundStyle(Theme.text2).padding(.horizontal, 16)
+                }
+                board
+                controls
+            }
+            }
+            if paused {
+                PrivacyCover(title: "对局已暂停", actionTitle: "继续") {
+                    paused = false
+                    vm.resume()
+                }
+            }
         }
+        .foregroundStyle(Theme.text1)
         .background(Theme.bg.ignoresSafeArea())
-        .navigationBarHidden(true)
-        .sensoryFeedback(.impact(weight: .medium), trigger: vm.rows.count)
-        .sensoryFeedback(.success, trigger: isWin)
-        .sensoryFeedback(.error, trigger: isLose)
-        .onChange(of: vm.outcome) { _, newValue in
-            if newValue != nil { sheetPresented = true }
+        .toolbar(.hidden, for: .navigationBar)
+        .task {
+            vm.reduceMotion = reduceMotion
+            if scenePhase == .active && !paused { vm.resume() }
+            resultPresented = vm.readyForResult
+            while !Task.isCancelled {
+                do { try await Task.sleep(for: .milliseconds(100)) } catch { break }
+                vm.tick()
+            }
         }
-        .sheet(isPresented: $sheetPresented) { sheet }
+        .onDisappear { vm.pause() }
+        .onChange(of: reduceMotion) { _, value in vm.reduceMotion = value; if value { vm.finishAnimation() } }
+        .onChange(of: vm.readyForResult) { _, ready in if ready { resultPresented = true } }
+        .onChange(of: scenePhase) { _, phase in
+            if phase != .active { vm.pause(); if isDuo { paused = true } }
+            else if !isDuo { vm.resume() }
+        }
+        .alert(isDuo ? "退出双人对战？" : "保存并退出对局？", isPresented: $exitPrompt) {
+            Button(isDuo ? "退出" : "保存并退出", role: .destructive) { vm.pause(); onExit() }
+            Button("取消", role: .cancel) { if !paused { vm.resume() } }
+        } message: { Text(isDuo ? "本次双方比分将清除。" : "可从首页继续最近一局。") }
+        .alert("重开本关？", isPresented: $restartPrompt) {
+            Button("重开", role: .destructive) { vm.restart() }
+            Button("取消", role: .cancel) { vm.resume() }
+        }
+        .sheet(isPresented: $resultPresented) {
+            Group {
+                if isDuo && paused {
+                    PrivacyCover(title: "结果已遮挡", actionTitle: "继续") { paused = false }
+                } else { result }
+            }
+                .interactiveDismissDisabled()
+                .presentationDetents([.medium, .large])
+                .presentationBackground(Theme.bg)
+        }
     }
-
-    private var isWin: Bool { if case .win = vm.outcome { true } else { false } }
-    private var isLose: Bool { vm.outcome == .lose }
-
-    // MARK: 区块
 
     private var navbar: some View {
         HStack {
-            Button { dismiss() } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(Theme.text2)
-                    .frame(width: 44, height: 44)
-                    .background(RoundedRectangle(cornerRadius: 12).fill(Theme.panel)
-                        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Theme.line, lineWidth: 1)))
-            }
+            Button { if !isDuo { vm.pause() }; exitPrompt = true } label: {
+                Image(systemName: "chevron.left").font(.system(size: 18, weight: .bold)).frame(width: 44, height: 44)
+            }.accessibilityLabel("返回").accessibilityIdentifier("gameBack")
             Spacer()
-            LEDView(text: vm.level.displayID)
+            LEDView(text: isDuo ? (vm.remaining.map(durationText) ?? "不限时") : vm.configuration.title,
+                    danger: isDuo && (vm.remaining ?? .infinity) <= 30)
+                .accessibilityLabel(isDuo ? "剩余时间" : "关卡")
+                .accessibilityValue(isDuo ? (vm.remaining.map(durationText) ?? "不限时") : vm.configuration.title)
             Spacer()
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "arrow.counterclockwise")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(Theme.amber)
-                    .frame(width: 44, height: 44)
-                    .background(RoundedRectangle(cornerRadius: 12).fill(Theme.panel)
-                        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Theme.line, lineWidth: 1)))
-            }
-        }
-        .padding(.horizontal, 16)
-        .frame(height: 46)
+            if !isDuo {
+                Button { vm.pause(); restartPrompt = true } label: {
+                    Image(systemName: "arrow.counterclockwise").font(.system(size: 18, weight: .bold)).frame(width: 44, height: 44)
+                }.accessibilityLabel("重开本关").accessibilityIdentifier("restart")
+            } else { Color.clear.frame(width: 44, height: 44) }
+        }.padding(.horizontal, 12)
     }
-
-    private var chipline: some View {
-        HStack {
-            Text(vm.isEasy ? "简单 · 直接提示" : "进阶 · 间接提示")
-            Spacer()
-            Text("已用 \(vm.guessesUsed)/\(vm.maxGuesses) 次")
-        }
-        .font(.system(size: 12))
-        .foregroundStyle(Theme.text2)
-        .padding(.horizontal, 18)
-        .padding(.vertical, 8)
-    }
-
-    private var legend: some View {
-        HStack(spacing: 14) {
-            Label("对位个数", systemImage: "circle.fill").labelStyle(HintLegendStyle(color: Theme.hintOn))
-            Label("错位个数", systemImage: "circle.fill").labelStyle(HintLegendStyle(color: Theme.hintWt))
-            Spacer()
-            Text("只报数量 · 不报位置").foregroundStyle(Theme.text3)
-        }
-        .font(.system(size: 11))
-        .foregroundStyle(Theme.text3)
-        .padding(.horizontal, 18)
-        .padding(.bottom, 6)
-    }
-
-    private struct HintLegendStyle: LabelStyle {
-        let color: Color
-        func makeBody(configuration: Configuration) -> some View {
-            HStack(spacing: 5) {
-                Circle().fill(color).overlay(Circle().strokeBorder(Theme.line, lineWidth: 1)).frame(width: 8, height: 8)
-                configuration.title
-            }
-        }
-    }
-
-    // MARK: 棋盘
 
     private var board: some View {
-        ScrollView {
-            VStack(spacing: 8) {
-                ForEach(0..<7, id: \.self) { index in
-                    boardRow(index)
-                }
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(spacing: 8) {
+                    ForEach(0..<7, id: \.self) { index in row(index).id(index) }
+                }.padding(10).background(Theme.board, in: RoundedRectangle(cornerRadius: 10))
+                    .frame(maxWidth: 390).frame(maxWidth: .infinity)
             }
-            .padding(10)
-            .background(RoundedRectangle(cornerRadius: 10).fill(Theme.board))
-            .frame(maxWidth: 390)
-            .frame(maxWidth: .infinity)
-        }
-        .padding(.horizontal, 16)
-        .padding(.bottom, 12)
+            .onChange(of: vm.rows.count) { _, count in proxy.scrollTo(min(6, count), anchor: .bottom) }
+            .onAppear { proxy.scrollTo(min(6, vm.rows.count), anchor: .center) }
+        }.padding(.horizontal, 12)
     }
 
-    private func boardRow(_ index: Int) -> some View {
+    private func row(_ index: Int) -> some View {
         let submitted = index < vm.rows.count
         let editing = index == vm.rows.count && vm.outcome == nil
-        return HStack(spacing: 8) {
+        return HStack(spacing: 6) {
             VStack(spacing: 2) {
                 Text("\(index + 1)").font(.system(size: 12, weight: .bold))
-                if index == 0 { Text("线索").font(.system(size: 9, weight: .bold)) }
-            }
-            .foregroundStyle(Theme.status)
-            .frame(width: 26)
+                if index == 0 && vm.configuration.clue != nil { Text("线索").font(.system(size: 9, weight: .bold)) }
+            }.frame(width: 26).accessibilityHidden(true)
             VStack(spacing: 5) {
                 HStack(spacing: 10) {
                     ForEach(0..<4, id: \.self) { col in
-                        PegView(color: submitted ? vm.rows[index].guess[col] : (editing ? vm.current[col] : nil),
-                                selected: editing && vm.selected == col)
-                            .onTapGesture { if editing { vm.select(col) } }
+                        let color = submitted ? vm.rows[index].guess[col] : (editing ? vm.current[col] : nil)
+                        if editing {
+                            Button { vm.select(col) } label: {
+                                PegView(color: color, selected: vm.selected == col)
+                            }.buttonStyle(.plain).disabled(!vm.canEdit)
+                                .accessibilityLabel("第 \(index + 1) 行第 \(col + 1) 格")
+                                .accessibilityValue("\(color?.spokenName ?? "空白"),\(vm.selected == col ? "已选中" : "未选中")")
+                                .accessibilityIdentifier("cell-\(col)")
+                                .accessibilityAction(named: "清空此格") { vm.clearCell(col) }
+                                .accessibilityAdjustableAction { vm.cycle(col, direction: $0 == .increment ? 1 : -1) }
+                                .simultaneousGesture(LongPressGesture(minimumDuration: 0.6).onEnded { _ in vm.clearCell(col) })
+                                // 长按后竖滑切色,普通滑动仍留给棋盘滚动。
+                                .simultaneousGesture(LongPressGesture(minimumDuration: 0.25).sequenced(before: DragGesture(minimumDistance: 18)).onEnded { value in
+                                    if case .second(true, let drag?) = value,
+                                       abs(drag.translation.height) > abs(drag.translation.width) * 1.5 {
+                                        vm.cycle(col, direction: drag.translation.height < 0 ? 1 : -1)
+                                    }
+                                })
+                        } else {
+                            PegView(color: color)
+                                .accessibilityLabel("第 \(index + 1) 行第 \(col + 1) 格,\(color?.spokenName ?? "空白")")
+                                .accessibilityValue(submitted && vm.isEasy ? vm.rows[index].evaluation.cells[col].spokenName : "")
+                        }
                     }
                 }
                 if vm.isEasy {
-                    if submitted {
-                        DirectHintDots(evaluation: vm.rows[index].evaluation, revealed: vm.rows[index].revealed)
-                    } else {
-                        Color.clear.frame(height: 9)
-                    }
+                    if submitted { DirectHintDots(evaluation: vm.rows[index].evaluation, revealed: vm.rows[index].revealed).accessibilityHidden(true) }
+                    else { Color.clear.frame(height: 9) }
                 }
-            }
+            }.frame(width: 206)
             Group {
                 if !vm.isEasy && submitted {
                     IndirectBadge(evaluation: vm.rows[index].evaluation, revealed: vm.rows[index].revealed)
-                } else {
-                    Color.clear
-                }
-            }
-            .frame(width: 41, height: 41)
-        }
-        .padding(.vertical, 5)
-        .frame(maxWidth: .infinity)
-        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Theme.selection, lineWidth: editing ? 1.5 : 0))
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("第 \(index + 1) 行提示:对位 \(vm.rows[index].evaluation.greens) 个,错位 \(vm.rows[index].evaluation.whites) 个")
+                } else { Color.clear.accessibilityHidden(true) }
+            }.frame(width: 41, height: 41)
+        }.padding(.vertical, 5).frame(maxWidth: .infinity)
+            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Theme.selection, lineWidth: editing ? 1.5 : 0))
     }
-
-    // MARK: 输入区
 
     private var controls: some View {
-        VStack(spacing: 14) {
-            HStack(spacing: 0) {
-                ForEach(PegColor.allCases, id: \.self) { color in
-                    Button {
-                        vm.fill(color)
-                    } label: {
-                        PegView(color: color, size: 40).frame(width: 44, height: 44)
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(vm.locked || vm.outcome != nil)
-                }
-            }
+        VStack(spacing: 10) {
+            PaletteView(enabled: vm.canEdit, onSelect: vm.fill)
             HStack(spacing: 10) {
-                Button("清 空") { vm.clearCurrent() }
-                    .buttonStyle(GhostButtonStyle())
-                    .disabled(vm.locked || vm.outcome != nil)
-                Button("确 认") {
-                    Task { await vm.submit() }
-                }
-                .buttonStyle(PrimaryButtonStyle(disabled: !vm.canSubmit))
-                .disabled(!vm.canSubmit)
+                Button("清空", action: vm.clearCurrent).buttonStyle(GhostButtonStyle()).disabled(!vm.canEdit)
+                Button("确认", action: vm.submit).buttonStyle(PrimaryButtonStyle(disabled: !vm.canSubmit))
+                    .disabled(!vm.canSubmit).accessibilityIdentifier("submit")
             }
-        }
-        .padding(.horizontal, 16)
-        .padding(.bottom, 24)
+        }.padding(.horizontal, 16).padding(.bottom, 12).frame(maxWidth: 560).frame(maxWidth: .infinity)
     }
 
-    // MARK: 结算弹层(§4.10)
-
-    @ViewBuilder private var sheet: some View {
-        VStack(spacing: 14) {
-            switch vm.outcome {
-            case .win(let stars):
-                StarsView(count: stars, big: true)
-                Text("破译成功!").font(.system(size: 24, weight: .heavy, design: .rounded)).foregroundStyle(Theme.text1)
-                Text("\(vm.level.displayID) · \(vm.guessesUsed) 次破译")
-                    .font(.system(size: 13)).foregroundStyle(Theme.text2)
-                answerLine
-                HStack(spacing: 10) {
-                    Button("重玩") {
-                        vm.restart()
-                        sheetPresented = false
-                    }.buttonStyle(GhostButtonStyle())
-                    Button("完成") { dismiss() }.buttonStyle(PrimaryButtonStyle())
+    private var result: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                Text(vm.outcome == .win ? "破译成功!" : vm.outcome == .timeout ? "时间到了" : "这次没猜中")
+                    .font(.title.bold()).accessibilityIdentifier("resultTitle")
+                Text("\(vm.guessesUsed) 次猜测 · 用时 \(durationText(vm.elapsed))").font(.subheadline)
+                if let duoSummary {
+                    Text(duoSummary).font(.headline)
+                    if let remaining = vm.remaining { Text("剩余 \(durationText(remaining))") }
                 }
-            case .lose:
-                Text("第 7 行 · 未破译")
-                    .font(.system(size: 11)).foregroundStyle(Theme.danger)
-                    .padding(.horizontal, 10).padding(.vertical, 4)
-                    .background(Capsule().strokeBorder(Theme.danger.opacity(0.35), lineWidth: 1))
-                Text("差一步!").font(.system(size: 24, weight: .heavy, design: .rounded)).foregroundStyle(Theme.text1)
-                Text("密码机器咯咯笑了 —— 再试一次,你已经有不少线索了")
-                    .font(.system(size: 13)).foregroundStyle(Theme.text2)
-                HStack(spacing: 10) {
-                    Button("查看答案") { vm.revealAnswer() }.buttonStyle(GhostButtonStyle())
-                    Button("重试本关") {
-                        vm.restart()
-                        sheetPresented = false
-                    }.buttonStyle(PrimaryButtonStyle())
+                if isDuo || vm.outcome == .win || (vm.answerRevealed && allowAnswer) {
+                    VStack(spacing: 8) {
+                        Text("答案").font(.headline)
+                        HStack(spacing: 10) {
+                            ForEach(0..<4) { i in PegView(color: vm.answer[i]).accessibilityLabel("第 \(i + 1) 格,\(vm.answer[i].spokenName)") }
+                        }
+                    }.accessibilityIdentifier("answer")
                 }
-            case .revealed:
-                Text("答案揭示").font(.system(size: 11)).foregroundStyle(Theme.text2)
-                    .padding(.horizontal, 10).padding(.vertical, 4)
-                    .background(Capsule().strokeBorder(Theme.line, lineWidth: 1))
-                Text("密码是").font(.system(size: 24, weight: .heavy, design: .rounded)).foregroundStyle(Theme.text1)
-                answerLine
-                Text("可在设置中关闭答案显示")
-                    .font(.system(size: 12)).foregroundStyle(Theme.text3)
-                Button("再试一次") {
-                    vm.restart()
-                    sheetPresented = false
-                }.buttonStyle(PrimaryButtonStyle())
-            case nil:
-                EmptyView()
+                if isDuo {
+                    Button("换边再来") { resultPresented = false; onSwap?() }.buttonStyle(PrimaryButtonStyle())
+                    Button("返回主菜单") { resultPresented = false; onExit() }.buttonStyle(GhostButtonStyle())
+                } else {
+                    if vm.outcome == .win {
+                        let last = vm.configuration.levelID == 100 || vm.configuration.levelID == 600
+                        Button(last ? "本模式已完成 · 返回选关" : "下一关") { resultPresented = false; onNext?() }
+                            .buttonStyle(PrimaryButtonStyle()).accessibilityIdentifier("nextLevel")
+                    } else if allowAnswer && !vm.answerRevealed {
+                        Button("查看答案") { vm.revealAnswer(allowed: allowAnswer) }.buttonStyle(GhostButtonStyle())
+                    }
+                    Button(vm.outcome == .win ? "重玩" : "重试本关") { resultPresented = false; vm.restart() }
+                        .buttonStyle(GhostButtonStyle())
+                    Button("选关") { resultPresented = false; onSelection?() }.buttonStyle(GhostButtonStyle())
+                }
+            }.padding(24).frame(maxWidth: 520).frame(maxWidth: .infinity)
+        }.foregroundStyle(Theme.text1)
+            .overlay(alignment: .top) {
+                if vm.outcome == .win && !reduceMotion { CelebrationView().allowsHitTesting(false).accessibilityHidden(true) }
             }
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 22)
-        .padding(.bottom, 42)
-        .frame(maxWidth: .infinity)
-        .background(
-            Rectangle()
-                .fill(Theme.bg)
-                .ignoresSafeArea()
-        )
-        .presentationDetents([.medium, .large])
-        .presentationBackground(Theme.bg)
-    }
-
-    private var answerLine: some View {
-        HStack(spacing: 10) {
-            Text("答案").font(.system(size: 12)).foregroundStyle(Theme.text3)
-            ForEach(vm.answer.indices, id: \.self) { i in
-                PegView(color: vm.answer[i])
-            }
-        }
     }
 }

@@ -1,82 +1,61 @@
 import SwiftUI
 import Core
 
-/// 关卡选择(VDD S4):简单/进阶分段 + 5 列网格 + 自由跳关(FR-L2 / FR-S6)。
-/// M1:星级/进度持久化属 M2,当前全部显示为未完成态。
 struct LevelSelectView: View {
-    @State private var band: Band = .easy
-
-    private var levels: [Level] {
-        LevelStore.table.levels.filter { $0.band == band }
-    }
+    let band: Band
+    @Environment(AppModel.self) private var app
+    @State private var expanded: Set<Int> = [0]
+    private var levels: [Level] { LevelStore.table.levels.filter { $0.band == band } }
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Text("关卡选择").font(.system(size: 17, weight: .heavy, design: .rounded))
-                    .foregroundStyle(Theme.text1)
-                Spacer()
-                LEDView(text: "★ 0", small: true)
-            }
-            .padding(.horizontal, 16)
-            .frame(height: 46)
-
-            HStack {
-                Text(band == .easy ? "简单 · 直接提示" : "进阶 · 间接提示")
-                Spacer()
-                Text("自由跳关 · 星级随时可刷")
-            }
-            .font(.system(size: 12))
-            .foregroundStyle(Theme.text2)
-            .padding(.horizontal, 18)
-            .padding(.bottom, 10)
-
-            Picker("模式", selection: $band) {
-                Text("简单 · 直接提示").tag(Band.easy)
-                Text("进阶 · 间接提示").tag(Band.advanced)
-            }
-            .pickerStyle(.segmented)
-            .padding(.horizontal, 16)
-            .padding(.bottom, 14)
-
-            ScrollView {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 9), count: 5), spacing: 9) {
-                    ForEach(levels, id: \.self) { level in
-                        NavigationLink(value: level) {
-                            levelCell(level)
-                        }
-                        .buttonStyle(.plain)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(band == .easy ? "直接提示 · 自由跳关" : "间接提示 · 自由跳关")
+                    .font(.subheadline).foregroundStyle(Theme.text2)
+                if band == .easy { grid(levels) }
+                else {
+                    ForEach(0..<10) { chapter in
+                        DisclosureGroup(isExpanded: Binding(get: { expanded.contains(chapter) }, set: {
+                            if $0 { expanded.insert(chapter) } else { expanded.remove(chapter) }
+                        })) {
+                            grid(Array(levels[(chapter * 50)..<(chapter * 50 + 50)]))
+                        } label: {
+                            Text(String(format: "第 %d 章 · A%03d–A%03d", chapter + 1, chapter * 50 + 1, chapter * 50 + 50))
+                                .font(.headline).padding(.vertical, 10)
+                        }.accessibilityIdentifier("chapter-\(chapter)")
                     }
                 }
-                .padding(10)
-                .background(RoundedRectangle(cornerRadius: 10).fill(Theme.board))
-                .padding(.horizontal, 16)
-                .padding(.bottom, 30)
-            }
+            }.padding(16).frame(maxWidth: 560).frame(maxWidth: .infinity)
         }
         .background(Theme.bg.ignoresSafeArea())
+        .navigationTitle(band == .easy ? "简单闯关" : "进阶闯关")
         .navigationBarTitleDisplayMode(.inline)
-    }
-
-    private func levelCell(_ level: Level) -> some View {
-        VStack(spacing: 2) {
-            Text(shortID(level))
-                .font(.system(size: 13, weight: .bold, design: .monospaced))
-                .foregroundStyle(Theme.text1)
-            StarsView(count: 0)
-                .font(.system(size: 9))
+        .toolbar(.visible, for: .navigationBar)
+        .onAppear {
+            if band == .advanced, let id = app.store.state.solo?.levelID, id > 100 { expanded.insert((id - 101) / 50) }
         }
-        .frame(maxWidth: .infinity)
-        .aspectRatio(1, contentMode: .fit)
-        .background(
-            RoundedRectangle(cornerRadius: 6)
-                .fill(Theme.bg)
-                .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Theme.line.opacity(0.6), lineWidth: 1))
-        )
     }
 
-    /// 网格格内短编号:E21 / A137(数字屏风格)。
-    private func shortID(_ level: Level) -> String {
-        level.band == .easy ? "E\(level.id)" : "A\(level.id - 100)"
+    private func grid(_ list: [Level]) -> some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 5), spacing: 8) {
+            ForEach(list, id: \.id) { level in
+                let completed = app.store.state.completed.contains(level.id)
+                let current = app.store.state.solo?.levelID == level.id
+                Button { app.requestLevel(level.id) } label: {
+                    VStack(spacing: 3) {
+                        Text(level.band == .easy ? "E\(level.id)" : "A\(level.id - 100)")
+                            .font(.system(size: 13, weight: .bold, design: .monospaced))
+                        HStack(spacing: 4) {
+                            if completed { Image(systemName: "checkmark") }
+                            if current { Image(systemName: "bookmark.fill") }
+                        }.font(.caption2).frame(height: 12)
+                    }.frame(maxWidth: .infinity).frame(minHeight: 48)
+                        .background(Theme.bg, in: RoundedRectangle(cornerRadius: 6))
+                        .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Theme.selection, lineWidth: current ? 2 : 0))
+                }.buttonStyle(.plain).foregroundStyle(Theme.text1)
+                    .accessibilityLabel("\(level.displayID),\(completed ? "已通关" : "未通关")\(current ? ",当前存档" : "")")
+                    .accessibilityIdentifier("level-\(level.id)")
+            }
+        }.padding(8).background(Theme.board, in: RoundedRectangle(cornerRadius: 10))
     }
 }

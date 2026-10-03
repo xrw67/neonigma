@@ -1,121 +1,53 @@
 import SwiftUI
 import Core
 
-/// 主菜单(VDD S3):浮动 logo + 继续闯关(第一入口)+ 三模式卡。
-/// M1 范围:单人闯关可用;双人为 M2、每日挑战为 P1,置灰占位。
 struct MainMenuView: View {
-
+    @Environment(AppModel.self) private var app
     var body: some View {
         ScrollView {
-            VStack(spacing: 0) {
-                hero
-                    .padding(.top, 28)
-                    .padding(.bottom, 24)
+            VStack(spacing: 24) {
+                HStack {
+                    Spacer()
+                    Button { app.path.append(.settings) } label: {
+                        Image(systemName: "gearshape").frame(width: 44, height: 44)
+                    }.accessibilityLabel("设置").accessibilityIdentifier("settings")
+                }
+                VStack(spacing: 14) {
+                    HStack(spacing: 8) {
+                        ForEach([PegColor.red, .blue, .purple, .yellow], id: \.self) { PegView(color: $0, size: 34) }
+                    }.accessibilityHidden(true)
+                    Text("霓虹密码机").font(.largeTitle.weight(.heavy))
+                    Text("NEONIGMA").font(.caption.monospaced()).kerning(5).foregroundStyle(Theme.text2)
+                }
                 VStack(spacing: 12) {
-                    continueCard
-                    modeCard(icon: "target", tint: Theme.text2,
-                             bg: Theme.panel2,
-                             title: "单人闯关") {
-                        LevelSelectView()
-                    }
-                    disabledCard(icon: "person.2.fill", tint: Theme.text2,
-                                 bg: Theme.panel2,
-                                 title: "双人对战",
-                                 tag: "M2")
-                    disabledCard(icon: "calendar", tint: Theme.text2,
-                                 bg: Theme.panel2,
-                                 title: "每日挑战",
-                                 tag: "P1")
-                }
-                .padding(.horizontal, 16)
-                Spacer(minLength: 32)
-                Text("霓虹密码机 Neonigma · v0.1.0 · M1")
-                    .font(.system(size: 11))
-                    .foregroundStyle(Theme.text3)
-                    .padding(.bottom, 20)
-            }
+                    Button { app.requestLevel(app.store.state.solo?.levelID ?? 1) } label: {
+                        card("play.fill", title: app.store.state.solo.map { "继续闯关 · \(LevelStore.level(id: $0.levelID).displayID)" } ?? "开始闯关")
+                    }.accessibilityIdentifier("continueGame")
+                    Button { app.path.append(.levels(.easy)) } label: { card("target", title: "简单闯关") }
+                        .accessibilityIdentifier("easyLevels")
+                    Button { app.path.append(.levels(.advanced)) } label: { card("puzzlepiece", title: "进阶闯关") }
+                        .accessibilityIdentifier("advancedLevels")
+                    Button { app.duoPresented = true } label: { card("person.2.fill", title: "双人对战") }
+                        .accessibilityIdentifier("duo")
+                    card("calendar", title: "每日挑战", unavailable: true)
+                }.buttonStyle(.plain)
+                Text("霓虹密码机 Neonigma · M2").font(.caption).foregroundStyle(Theme.text2)
+            }.padding(.horizontal, 16).padding(.bottom, 24).frame(maxWidth: 560)
+                .frame(maxWidth: .infinity)
         }
+        .foregroundStyle(Theme.text1)
         .background(Theme.bg.ignoresSafeArea())
-        .navigationBarHidden(true)
-        .navigationDestination(for: Level.self) { level in
-            GameView(level: level)
-        }
+        .toolbar(.hidden, for: .navigationBar)
     }
-
-    private var hero: some View {
-        VStack(spacing: 14) {
-            HStack(spacing: 8) {
-                ForEach(Array([PegColor.red, .blue, .purple, .yellow].enumerated()), id: \.offset) { i, c in
-                    PegView(color: c, size: 34)
-
-                }
-            }
-            Text("霓虹密码机")
-                .font(.system(size: 34, weight: .heavy, design: .rounded))
-                .foregroundStyle(Theme.text1)
-            Text("NEONIGMA")
-                .font(.system(size: 11, design: .monospaced))
-                .kerning(5)
-                .foregroundStyle(Theme.text3)
-        }
-    }
-
-    /// M1 占位:进度持久化(SwiftData)属 M2,先固定进入 E-001。
-    private var continueCard: some View {
-        NavigationLink(value: LevelStore.level(id: 1)) {
-            modeCardLabel(icon: "play.fill", tint: Theme.text2,
-                          bg: Theme.panel2,
-                          title: "继续闯关 · E-001") {
-                Image(systemName: "chevron.right").foregroundStyle(Theme.text3)
-            }
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func modeCard<Destination: View>(icon: String, tint: Color, bg: Color,
-                                             title: String,
-                                             @ViewBuilder destination: @escaping () -> Destination) -> some View {
-        NavigationLink {
-            destination()
-        } label: {
-            modeCardLabel(icon: icon, tint: tint, bg: bg, title: title) {
-                Image(systemName: "chevron.right").foregroundStyle(Theme.text3)
-            }
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func disabledCard(icon: String, tint: Color, bg: Color,
-                              title: String, tag: String) -> some View {
-        modeCardLabel(icon: icon, tint: tint, bg: bg, title: title) {
-            Text(tag)
-                .font(.system(size: 10, weight: .bold))
-                .foregroundStyle(Theme.text3)
-                .padding(.horizontal, 8).padding(.vertical, 3)
-                .background(Capsule().strokeBorder(Theme.line, lineWidth: 1))
-        }
-    }
-
-    private func modeCardLabel<Trailing: View>(icon: String, tint: Color, bg: Color,
-                                               title: String,
-                                               @ViewBuilder trailing: @escaping () -> Trailing) -> some View {
+    private func card(_ icon: String, title: String, unavailable: Bool = false) -> some View {
         HStack(spacing: 14) {
-            Image(systemName: icon)
-                .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(tint)
-                .frame(width: 46, height: 46)
-                .background(RoundedRectangle(cornerRadius: 8).fill(bg))
-            Text(title)
-                .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(Theme.text1)
-            Spacer()
-            trailing()
-        }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Theme.panel)
-                .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Theme.line.opacity(0.6), lineWidth: 1))
-        )
+            Image(systemName: icon).font(.title3.bold()).foregroundStyle(Theme.text2)
+                .frame(width: 46, height: 46).background(Theme.panel2, in: RoundedRectangle(cornerRadius: 8))
+            Text(title).font(.headline).multilineTextAlignment(.leading)
+            Spacer(minLength: 4)
+            if unavailable { Text("即将推出").font(.caption).foregroundStyle(Theme.text2) }
+            else { Image(systemName: "chevron.right").foregroundStyle(Theme.text2) }
+        }.padding(16).background(Theme.panel, in: RoundedRectangle(cornerRadius: 10))
+            .accessibilityElement(children: .combine)
     }
 }
