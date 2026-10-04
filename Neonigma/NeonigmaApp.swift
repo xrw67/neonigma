@@ -63,7 +63,7 @@ struct AppRootView: View {
             MainMenuView()
                 .navigationDestination(for: AppRoute.self) { route in
                     switch route {
-                    case .levels(let band): LevelSelectView(band: band)
+                    case .soloLevels: LevelSelectView()
                     case .settings: SettingsView()
                     case .game:
                         if let game = app.game {

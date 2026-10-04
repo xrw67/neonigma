@@ -231,11 +231,117 @@ import Core
         let store = try ProgressStore(inMemory: true)
         let app = AppModel(store: store)
         app.openLevel(100); app.nextLevel()
-        #expect(app.path == [.levels(.easy)])
+        #expect(app.path == [.soloLevels] && app.selectedBand == .easy)
         app.openLevel(600); app.nextLevel()
-        #expect(app.path == [.levels(.advanced)])
+        #expect(app.path == [.soloLevels] && app.selectedBand == .advanced)
         app.openLevel(99); app.nextLevel()
         #expect(app.game?.configuration.levelID == 100)
+    }
+
+    @Test func soloShortcutStartsAndResumesWithoutBrowsingWrites() throws {
+        let store = try ProgressStore(inMemory: true)
+        let app = AppModel(store: store)
+        app.showSoloLevels()
+        #expect(app.path == [.soloLevels] && app.selectedBand == .easy)
+        #expect(app.soloShortcut.title == "开始闯关 · 简单第 1 关")
+        app.selectedBand = .advanced; app.expandedChapters = [3]
+        #expect(store.state.solo == nil && app.advancedLevel == nil)
+        app.performSoloShortcut()
+        #expect(app.game?.configuration.levelID == 1 && app.selectedBand == .easy)
+        #expect(app.path.count == 2)
+        app.leaveGame()
+        let saved = snapshot(id: 151)
+        store.save(saved)
+        app.showSoloLevels()
+        #expect(app.selectedBand == .advanced && app.expandedChapters.contains(1))
+        #expect(app.soloShortcut.title == "继续闯关 · 进阶第 51 关")
+        app.selectedBand = .easy
+        #expect(store.state.solo == saved && app.advancedLevel == nil)
+        app.performSoloShortcut()
+        #expect(app.advancedLevel == 151 && store.state.solo == saved)
+        app.confirmAdvancedHelp()
+        #expect(app.game?.roundID == saved.roundID && app.game?.current == saved.current)
+        #expect(app.game?.elapsed == 12 && app.selectedBand == .advanced)
+        app.expandedChapters.remove(0)
+        app.leaveGame()
+        #expect(app.path == [.soloLevels] && app.expandedChapters == [1])
+    }
+
+    @Test func soloShortcutNextAndModeEnds() throws {
+        let store = try ProgressStore(inMemory: true)
+        let app = AppModel(store: store)
+        for id in [1, 99, 101, 599] {
+            store.save(snapshot(id: id, outcome: .win))
+            let stats = store.state.stats
+            app.showSoloLevels(); app.performSoloShortcut()
+            if app.advancedLevel != nil { app.confirmAdvancedHelp() }
+            #expect(app.game?.configuration.levelID == id + 1 && app.game?.outcome == nil)
+            #expect(store.state.stats == stats)
+            app.leaveGame()
+        }
+        for id in [100, 600] {
+            let saved = snapshot(id: id, outcome: .win)
+            store.save(saved); app.showSoloLevels()
+            #expect(app.soloShortcut.levelID == nil)
+            #expect(app.soloShortcut.title == (id == 100 ? "简单模式已完成" : "进阶模式已完成"))
+            app.performSoloShortcut()
+            #expect(app.path == [.soloLevels] && store.state.solo == saved)
+        }
+    }
+
+    @Test func soloShortcutRetryPreservesHistoryButGridRestoresResult() throws {
+        let store = try ProgressStore(inMemory: true)
+        let app = AppModel(store: store)
+        store.save(snapshot(outcome: .win))
+        var failed = snapshot(outcome: .lose)
+        failed.answerRevealed = true
+        store.save(failed)
+        let stats = store.state.stats
+        app.showSoloLevels(); app.requestLevel(1)
+        #expect(app.game?.outcome == .lose && app.game?.answerRevealed == true)
+        app.leaveGame(); app.selectedBand = .advanced
+        #expect(app.soloShortcut.title == "重试 · 简单第 1 关")
+        app.performSoloShortcut()
+        let game = try #require(app.game)
+        #expect(game.roundID != failed.roundID && game.outcome == nil)
+        #expect(game.rows.count == 1 && game.current == [nil, nil, nil, nil])
+        #expect(game.elapsed == 0 && !game.answerRevealed && game.selected == 0)
+        #expect(app.selectedBand == .easy && store.state.completed == [1])
+        game.onChange?()
+        #expect(store.state.stats == stats && store.state.solo?.roundID == game.roundID)
+    }
+
+    @Test func soloBrowsingReplacementCancellationAndSessionReset() throws {
+        let store = try ProgressStore(inMemory: true)
+        let saved = snapshot()
+        store.save(saved)
+        let app = AppModel(store: store)
+        app.showSoloLevels(); app.selectedBand = .advanced; app.expandedChapters = [5]
+        app.requestLevel(351)
+        #expect(app.replacementLevel == 351 && app.advancedLevel == nil)
+        app.replacementLevel = nil
+        #expect(store.state.solo == saved && app.selectedBand == .advanced && app.expandedChapters == [5])
+        app.showSoloLevels()
+        #expect(app.selectedBand == .easy && app.expandedChapters == [0])
+        app.selectedBand = .advanced; app.requestLevel(351); app.confirmReplacement()
+        #expect(app.advancedLevel == 351 && store.state.solo == saved)
+        app.confirmAdvancedHelp(); app.selectLevels()
+        #expect(app.path == [.soloLevels] && app.selectedBand == .advanced)
+        #expect(app.expandedChapters.contains(5) && store.state.solo?.levelID == 351)
+    }
+
+    @Test func departingGameCannotOverwriteNewSoloSave() throws {
+        let store = try ProgressStore(inMemory: true)
+        let app = AppModel(store: store)
+        app.openLevel(1)
+        let old = try #require(app.game)
+        app.openLevel(2)
+        let newRound = app.game?.roundID
+        old.pause(); old.onChange?()
+        #expect(store.state.solo?.levelID == 2 && store.state.solo?.roundID == newRound)
+        app.leaveGame()
+        old.onChange?()
+        #expect(store.state.solo?.levelID == 2)
     }
 
 }

@@ -64,7 +64,7 @@ struct GameView: View {
         .alert(isDuo ? "退出双人对战？" : "保存并退出对局？", isPresented: $exitPrompt) {
             Button(isDuo ? "退出" : "保存并退出", role: .destructive) { vm.pause(); onExit() }
             Button("取消", role: .cancel) { if !paused { vm.resume() } }
-        } message: { Text(isDuo ? "本次双方比分将清除。" : "可从首页继续最近一局。") }
+        } message: { Text(isDuo ? "本次双方比分将清除。" : "可从单人闯关页面继续最近一局。") }
         .alert("重开本关？", isPresented: $restartPrompt) {
             Button("重开", role: .destructive) { vm.restart() }
             Button("取消", role: .cancel) { vm.resume() }

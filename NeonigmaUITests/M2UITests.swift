@@ -1,9 +1,10 @@
 import XCTest
 
 @MainActor final class M2UITests: XCTestCase {
-    private func launch(store: String = UUID().uuidString, skip: Bool = true) -> XCUIApplication {
+    private func launch(store: String = UUID().uuidString, skip: Bool = true, largeText: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-test-store", store] + (skip ? ["-skip-tutorial"] : [])
+        if largeText { app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"] }
         app.launch()
         return app
     }
@@ -13,14 +14,61 @@ import XCTest
         XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: enabled, object: element)], timeout: 5), .completed)
         element.tap()
     }
+    private func chapter(_ number: Int, in app: XCUIApplication) -> XCUIElement {
+        app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "第 \(number) 章 ·")).firstMatch
+    }
     private func choose(_ app: XCUIApplication, _ colors: [Int]) {
         for color in colors { tap(app.buttons["color-\(color)"]) }
     }
     private func screenshot(_ app: XCUIApplication, _ name: String) {
+        // iOS 17 的可访问元素会在转场结束前出现;截图需等待导航动画稳定。
+        Thread.sleep(forTimeInterval: 0.5)
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+
+    func testUnifiedSoloHomeAndBrowsing() {
+        let app = launch()
+        XCTAssertTrue(app.buttons["soloLevels"].exists && app.buttons["duo"].exists && app.buttons["settings"].exists)
+        XCTAssertFalse(app.buttons["continueGame"].exists || app.buttons["easyLevels"].exists || app.buttons["advancedLevels"].exists)
+        screenshot(app, "三入口首页")
+        tap(app.buttons["soloLevels"])
+        XCTAssertTrue(app.segmentedControls["soloBand"].buttons["简单"].isSelected)
+        screenshot(app, "统一简单选关")
+        tap(app.segmentedControls["soloBand"].buttons["进阶"])
+        tap(chapter(1, in: app))
+        tap(chapter(2, in: app))
+        tap(app.segmentedControls["soloBand"].buttons["简单"])
+        tap(app.segmentedControls["soloBand"].buttons["进阶"])
+        XCTAssertFalse(app.buttons["level-101"].exists)
+        XCTAssertTrue(app.buttons["level-151"].exists)
+        screenshot(app, "统一进阶选关")
+        app.navigationBars.buttons.firstMatch.tap()
+        tap(app.buttons["soloLevels"])
+        XCTAssertTrue(app.segmentedControls["soloBand"].buttons["简单"].isSelected)
+        XCTAssertEqual(app.buttons["soloShortcut"].label, "开始闯关 · 简单第 1 关")
+    }
+
+    func testUnifiedSoloLargeText() {
+        let app = launch(largeText: true)
+        screenshot(app, "大字体三入口首页")
+        tap(app.buttons["soloLevels"])
+        screenshot(app, "大字体统一选关顶部")
+        scrollTo(app.buttons["level-100"], in: app)
+        screenshot(app, "大字体简单末关")
+        scrollTo(app.segmentedControls["soloBand"], in: app, towardTop: true)
+        tap(app.segmentedControls["soloBand"].buttons["进阶"])
+        tap(chapter(1, in: app))
+        scrollTo(chapter(10, in: app), in: app)
+        tap(chapter(10, in: app))
+        scrollTo(app.buttons["level-600"], in: app)
+        screenshot(app, "大字体进阶末关")
+        app.navigationBars.buttons.firstMatch.tap()
+        scrollTo(app.buttons["settings"], in: app)
+        tap(app.buttons["settings"])
+        XCTAssertTrue(app.switches["answerSetting"].waitForExistence(timeout: 8))
     }
 
     func testTutorialAndReplayPreservesGame() {
@@ -35,25 +83,28 @@ import XCTest
         tap(app.buttons["color-2"])
         tap(app.buttons["gameBack"])
         tap(app.alerts.buttons["保存并退出"])
+        app.navigationBars.buttons.firstMatch.tap()
         scrollTo(app.buttons["settings"], in: app)
         screenshot(app, "首页底部设置入口")
         tap(app.buttons["settings"])
         tap(app.buttons["重放教程"])
         tap(app.buttons["跳过"])
         app.navigationBars.buttons.firstMatch.tap()
-        scrollTo(app.buttons["continueGame"], in: app, towardTop: true)
-        tap(app.buttons["continueGame"])
+        tap(app.buttons["soloLevels"])
+        tap(app.buttons["soloShortcut"])
         XCTAssertTrue(app.buttons["cell-0"].value as? String == "黄色,未选中")
     }
 
     func testSaveAcrossRelaunchAndRestart() {
         let store = UUID().uuidString
         var app = launch(store: store)
-        tap(app.buttons["continueGame"])
+        tap(app.buttons["soloLevels"])
+        tap(app.buttons["soloShortcut"])
         choose(app, [0, 1])
         app.terminate()
         app = launch(store: store)
-        tap(app.buttons["continueGame"])
+        tap(app.buttons["soloLevels"])
+        tap(app.buttons["soloShortcut"])
         XCTAssertEqual(app.buttons["cell-0"].value as? String, "红色,未选中")
         XCTAssertEqual(app.buttons["cell-1"].value as? String, "橙色,未选中")
         screenshot(app, "恢复单人棋盘")
@@ -66,7 +117,7 @@ import XCTest
 
     func testWinNextLevelAndSelection() {
         let app = launch()
-        tap(app.buttons["easyLevels"])
+        tap(app.buttons["soloLevels"])
         XCTAssertEqual(app.buttons["level-1"].label, "E-001，未通关")
         XCTAssertFalse(app.buttons["level-1"].label.contains("checkmark"))
         tap(app.buttons["level-1"])
@@ -74,7 +125,9 @@ import XCTest
         tap(app.buttons["submit"])
         XCTAssertTrue(app.staticTexts["破译成功!"].waitForExistence(timeout: 8))
         screenshot(app, "单人成功结算")
-        tap(app.buttons["nextLevel"])
+        tap(app.buttons["选关"])
+        XCTAssertEqual(app.buttons["soloShortcut"].label, "下一关 · 简单第 2 关")
+        tap(app.buttons["soloShortcut"])
         XCTAssertTrue(app.staticTexts["E-002"].waitForExistence(timeout: 8))
         tap(app.buttons["gameBack"])
         tap(app.alerts.buttons["保存并退出"])
@@ -88,7 +141,10 @@ import XCTest
 
     func testAdvancedHelpAndChapters() {
         let app = launch()
-        tap(app.buttons["advancedLevels"])
+        tap(app.buttons["soloLevels"])
+        tap(app.segmentedControls["soloBand"].buttons["进阶"])
+        XCTAssertFalse(app.buttons["明白了,开始闯关"].exists)
+        XCTAssertEqual(app.buttons["soloShortcut"].label, "开始闯关 · 简单第 1 关")
         XCTAssertEqual(app.buttons["level-101"].label, "A-001，未通关")
         XCTAssertFalse(app.buttons["level-101"].label.contains("bookmark"))
         screenshot(app, "进阶章节")
@@ -96,6 +152,14 @@ import XCTest
         tap(app.buttons["明白了,开始闯关"])
         XCTAssertTrue(app.staticTexts["A-001"].waitForExistence(timeout: 8))
         screenshot(app, "进阶棋盘")
+        tap(app.buttons["gameBack"]); tap(app.alerts.buttons["保存并退出"])
+        XCTAssertTrue(app.segmentedControls["soloBand"].buttons["进阶"].isSelected)
+        tap(app.segmentedControls["soloBand"].buttons["简单"])
+        XCTAssertEqual(app.buttons["soloShortcut"].label, "继续闯关 · 进阶第 1 关")
+        tap(app.buttons["soloShortcut"])
+        XCTAssertTrue(app.staticTexts["A-001"].waitForExistence(timeout: 8))
+        tap(app.buttons["gameBack"]); tap(app.alerts.buttons["保存并退出"])
+        XCTAssertTrue(app.segmentedControls["soloBand"].buttons["进阶"].isSelected)
     }
 
     func testDuoDuplicateHandoffWinAndSwap() {
@@ -134,8 +198,8 @@ import XCTest
         tap(app.buttons["settings"])
         XCTAssertEqual(app.switches["answerSetting"].value as? String, "0")
         app.navigationBars.buttons.firstMatch.tap()
-        scrollTo(app.buttons["continueGame"], in: app, towardTop: true)
-        tap(app.buttons["continueGame"])
+        tap(app.buttons["soloLevels"])
+        tap(app.buttons["soloShortcut"])
         for _ in 0..<6 {
             choose(app, [1, 1, 1, 1]); tap(app.buttons["submit"])
             let enabled = NSPredicate(format: "enabled == true")
@@ -156,17 +220,18 @@ import XCTest
 
     func testFirstAndLastLevelsInBothModes() {
         let app = launch()
-        tap(app.buttons["easyLevels"])
+        tap(app.buttons["soloLevels"])
         scrollTo(app.buttons["level-100"], in: app)
         tap(app.buttons["level-100"])
         XCTAssertTrue(app.staticTexts["E-100"].waitForExistence(timeout: 8))
         XCTAssertTrue(app.staticTexts["直接提示"].exists)
         tap(app.buttons["gameBack"]); tap(app.alerts.buttons["保存并退出"])
-        app.navigationBars.buttons.firstMatch.tap()
-        tap(app.buttons["advancedLevels"])
-        let firstChapter = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "第 1 章")).firstMatch
+        XCTAssertTrue(app.segmentedControls["soloBand"].waitForExistence(timeout: 8))
+        scrollTo(app.segmentedControls["soloBand"], in: app, towardTop: true)
+        tap(app.segmentedControls["soloBand"].buttons["进阶"])
+        let firstChapter = chapter(1, in: app)
         tap(firstChapter)
-        let lastChapter = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "第 10 章")).firstMatch
+        let lastChapter = chapter(10, in: app)
         scrollTo(lastChapter, in: app); tap(lastChapter)
         scrollTo(app.buttons["level-600"], in: app); tap(app.buttons["level-600"])
         tap(app.alerts.buttons["替换并开始"])
@@ -196,17 +261,21 @@ import XCTest
     func testDefaultFailureCanRevealAndRestore() {
         let store = UUID().uuidString
         var app = launch(store: store)
-        tap(app.buttons["continueGame"])
+        tap(app.buttons["soloLevels"])
+        tap(app.buttons["soloShortcut"])
         for _ in 0..<6 {
             choose(app, [1, 1, 1, 1]); tap(app.buttons["submit"])
         }
         tap(app.buttons["查看答案"])
         XCTAssertTrue(app.staticTexts["答案"].exists)
         app.terminate(); app = launch(store: store)
-        tap(app.buttons["continueGame"])
+        tap(app.buttons["soloLevels"])
+        XCTAssertEqual(app.buttons["soloShortcut"].label, "重试 · 简单第 1 关")
+        tap(app.buttons["level-1"])
         XCTAssertTrue(app.staticTexts["答案"].waitForExistence(timeout: 8))
         screenshot(app, "失败后答案恢复")
-        tap(app.buttons["重试本关"])
+        tap(app.buttons["选关"])
+        tap(app.buttons["soloShortcut"])
         let cleared = NSPredicate(format: "value == %@", "空白,已选中")
         XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: cleared, object: app.buttons["cell-0"])], timeout: 5), .completed)
         screenshot(app, "重开后棋盘")

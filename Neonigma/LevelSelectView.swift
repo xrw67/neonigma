@@ -2,21 +2,36 @@ import SwiftUI
 import Core
 
 struct LevelSelectView: View {
-    let band: Band
     @Environment(AppModel.self) private var app
-    @State private var expanded: Set<Int> = [0]
-    private var levels: [Level] { LevelStore.table.levels.filter { $0.band == band } }
+    private var band: Band { app.selectedBand }
 
     var body: some View {
+        @Bindable var app = app
+        // 章节闭包使用本次构建的列表,避免模式切换时旧视图读取新模式的数组。
+        let levels = LevelStore.table.levels.filter { $0.band == band }
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                if app.soloShortcut.levelID != nil {
+                    Button(app.soloShortcut.title) { app.performSoloShortcut() }
+                        .buttonStyle(PrimaryButtonStyle())
+                        .accessibilityIdentifier("soloShortcut")
+                } else {
+                    Text(app.soloShortcut.title).font(.headline)
+                        .frame(maxWidth: .infinity, minHeight: 52)
+                        .background(Theme.panel, in: RoundedRectangle(cornerRadius: 8))
+                        .accessibilityIdentifier("soloModeComplete")
+                }
+                Picker("模式", selection: $app.selectedBand) {
+                    Text("简单").tag(Band.easy)
+                    Text("进阶").tag(Band.advanced)
+                }.pickerStyle(.segmented).accessibilityIdentifier("soloBand")
                 Text(band == .easy ? "直接提示 · 自由跳关" : "间接提示 · 自由跳关")
                     .font(.subheadline).foregroundStyle(Theme.text2)
                 if band == .easy { grid(levels) }
                 else {
                     ForEach(0..<10) { chapter in
-                        DisclosureGroup(isExpanded: Binding(get: { expanded.contains(chapter) }, set: {
-                            if $0 { expanded.insert(chapter) } else { expanded.remove(chapter) }
+                        DisclosureGroup(isExpanded: Binding(get: { app.expandedChapters.contains(chapter) }, set: {
+                            if $0 { app.expandedChapters.insert(chapter) } else { app.expandedChapters.remove(chapter) }
                         })) {
                             grid(Array(levels[(chapter * 50)..<(chapter * 50 + 50)]))
                         } label: {
@@ -28,12 +43,9 @@ struct LevelSelectView: View {
             }.padding(16).frame(maxWidth: 560).frame(maxWidth: .infinity)
         }
         .background(Theme.bg.ignoresSafeArea())
-        .navigationTitle(band == .easy ? "简单闯关" : "进阶闯关")
+        .navigationTitle("单人闯关")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.visible, for: .navigationBar)
-        .onAppear {
-            if band == .advanced, let id = app.store.state.solo?.levelID, id > 100 { expanded.insert((id - 101) / 50) }
-        }
     }
 
     private func grid(_ list: [Level]) -> some View {

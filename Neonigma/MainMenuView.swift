@@ -19,13 +19,8 @@ struct MainMenuView: View {
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("霓虹密码机，Neonigma")
                 VStack(spacing: 12) {
-                    Button { app.requestLevel(app.store.state.solo?.levelID ?? 1) } label: {
-                        card("play.fill", title: app.store.state.solo.map { "继续闯关 · \(LevelStore.level(id: $0.levelID).displayID)" } ?? "开始闯关")
-                    }.accessibilityIdentifier("continueGame")
-                    Button { app.path.append(.levels(.easy)) } label: { card("target", title: "简单闯关") }
-                        .accessibilityIdentifier("easyLevels")
-                    Button { app.path.append(.levels(.advanced)) } label: { card("puzzlepiece", title: "进阶闯关") }
-                        .accessibilityIdentifier("advancedLevels")
+                    Button { app.showSoloLevels() } label: { card("play.fill", title: "单人闯关") }
+                        .accessibilityIdentifier("soloLevels")
                     Button { app.duoPresented = true } label: { card("person.2.fill", title: "双人对战") }
                         .accessibilityIdentifier("duo")
                     Button { app.path.append(.settings) } label: { card("gearshape", title: "设置") }
