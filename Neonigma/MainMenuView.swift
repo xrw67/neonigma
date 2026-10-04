@@ -6,12 +6,6 @@ struct MainMenuView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                HStack {
-                    Spacer()
-                    Button { app.path.append(.settings) } label: {
-                        Image(systemName: "gearshape").frame(width: 44, height: 44)
-                    }.accessibilityLabel("设置").accessibilityIdentifier("settings")
-                }
                 VStack(spacing: 14) {
                     LogoMark()
                     Text("霓虹密码机")
@@ -34,6 +28,8 @@ struct MainMenuView: View {
                         .accessibilityIdentifier("advancedLevels")
                     Button { app.duoPresented = true } label: { card("person.2.fill", title: "双人对战") }
                         .accessibilityIdentifier("duo")
+                    Button { app.path.append(.settings) } label: { card("gearshape", title: "设置") }
+                        .accessibilityLabel("设置").accessibilityIdentifier("settings")
                 }.buttonStyle(.plain)
                 Text("霓虹密码机 Neonigma · M2").font(.caption).foregroundStyle(Theme.text2)
             }.padding(.horizontal, 16).padding(.bottom, 24).frame(maxWidth: 560)

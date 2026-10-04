@@ -35,10 +35,13 @@ import XCTest
         tap(app.buttons["color-2"])
         tap(app.buttons["gameBack"])
         tap(app.alerts.buttons["保存并退出"])
+        scrollTo(app.buttons["settings"], in: app)
+        screenshot(app, "首页底部设置入口")
         tap(app.buttons["settings"])
         tap(app.buttons["重放教程"])
         tap(app.buttons["跳过"])
         app.navigationBars.buttons.firstMatch.tap()
+        scrollTo(app.buttons["continueGame"], in: app, towardTop: true)
         tap(app.buttons["continueGame"])
         XCTAssertTrue(app.buttons["cell-0"].value as? String == "黄色,未选中")
     }
@@ -117,6 +120,8 @@ import XCTest
 
     func testFailureAnswerSetting() {
         let app = launch()
+        scrollTo(app.buttons["settings"], in: app)
+        screenshot(app, "首页底部设置入口")
         tap(app.buttons["settings"])
         let toggle = app.switches["answerSetting"]
         XCTAssertTrue(toggle.waitForExistence(timeout: 8))
@@ -124,9 +129,12 @@ import XCTest
         XCTAssertEqual(toggle.value as? String, "0")
         screenshot(app, "答案设置关闭")
         app.navigationBars.buttons.firstMatch.tap()
+        scrollTo(app.buttons["settings"], in: app)
+        screenshot(app, "首页底部设置入口")
         tap(app.buttons["settings"])
         XCTAssertEqual(app.switches["answerSetting"].value as? String, "0")
         app.navigationBars.buttons.firstMatch.tap()
+        scrollTo(app.buttons["continueGame"], in: app, towardTop: true)
         tap(app.buttons["continueGame"])
         for _ in 0..<6 {
             choose(app, [1, 1, 1, 1]); tap(app.buttons["submit"])
@@ -138,10 +146,10 @@ import XCTest
         XCTAssertTrue(app.staticTexts["这次没猜中"].waitForExistence(timeout: 8))
         XCTAssertFalse(app.buttons["查看答案"].exists)
     }
-    private func scrollTo(_ element: XCUIElement, in app: XCUIApplication) {
+    private func scrollTo(_ element: XCUIElement, in app: XCUIApplication, towardTop: Bool = false) {
         for _ in 0..<20 {
             if element.exists && element.isHittable { return }
-            app.swipeUp()
+            if towardTop { app.swipeDown() } else { app.swipeUp() }
         }
         XCTFail("无法滚动到目标元素")
     }
