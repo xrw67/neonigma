@@ -64,6 +64,8 @@ import XCTest
     func testWinNextLevelAndSelection() {
         let app = launch()
         tap(app.buttons["easyLevels"])
+        XCTAssertEqual(app.buttons["level-1"].label, "E-001，未通关")
+        XCTAssertFalse(app.buttons["level-1"].label.contains("checkmark"))
         tap(app.buttons["level-1"])
         choose(app, [6, 3, 0, 4])
         tap(app.buttons["submit"])
@@ -73,6 +75,7 @@ import XCTest
         XCTAssertTrue(app.staticTexts["E-002"].waitForExistence(timeout: 8))
         tap(app.buttons["gameBack"])
         tap(app.alerts.buttons["保存并退出"])
+        XCTAssertEqual(app.buttons["level-1"].label, "E-001，已通关")
         tap(app.buttons["level-1"])
         tap(app.alerts.buttons["取消"])
         tap(app.buttons["level-1"])
@@ -83,6 +86,8 @@ import XCTest
     func testAdvancedHelpAndChapters() {
         let app = launch()
         tap(app.buttons["advancedLevels"])
+        XCTAssertEqual(app.buttons["level-101"].label, "A-001，未通关")
+        XCTAssertFalse(app.buttons["level-101"].label.contains("bookmark"))
         screenshot(app, "进阶章节")
         tap(app.buttons["level-101"])
         tap(app.buttons["明白了,开始闯关"])

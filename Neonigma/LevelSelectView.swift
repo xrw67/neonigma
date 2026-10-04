@@ -42,18 +42,13 @@ struct LevelSelectView: View {
                 let completed = app.store.state.completed.contains(level.id)
                 let current = app.store.state.solo?.levelID == level.id
                 Button { app.requestLevel(level.id) } label: {
-                    VStack(spacing: 3) {
-                        Text(level.band == .easy ? "E\(level.id)" : "A\(level.id - 100)")
-                            .font(.system(size: 13, weight: .bold, design: .monospaced))
-                        HStack(spacing: 4) {
-                            if completed { Image(systemName: "checkmark") }
-                            if current { Image(systemName: "bookmark.fill") }
-                        }.font(.caption2).frame(height: 12)
-                    }.frame(maxWidth: .infinity).frame(minHeight: 48)
-                        .background(Theme.bg, in: RoundedRectangle(cornerRadius: 6))
+                    Text("\(level.band == .easy ? level.id : level.id - 100)")
+                        .font(.system(size: 17, weight: .bold, design: .monospaced))
+                        .frame(maxWidth: .infinity).frame(minHeight: 48)
+                        .background(completed ? Theme.levelCompleted : Theme.bg, in: RoundedRectangle(cornerRadius: 6))
                         .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Theme.selection, lineWidth: current ? 2 : 0))
-                }.buttonStyle(.plain).foregroundStyle(Theme.text1)
-                    .accessibilityLabel("\(level.displayID),\(completed ? "已通关" : "未通关")\(current ? ",当前存档" : "")")
+                }.buttonStyle(.plain).foregroundStyle(completed ? Theme.hintOn : Theme.text1)
+                    .accessibilityLabel("\(level.displayID)，\(completed ? "已通关" : "未通关")\(current ? "，当前存档" : "")")
                     .accessibilityIdentifier("level-\(level.id)")
             }
         }.padding(8).background(Theme.board, in: RoundedRectangle(cornerRadius: 10))

@@ -1,6 +1,25 @@
 import SwiftUI
 import Core
 
+/// 首页与 App 图标共用的四珠标志排列。
+struct LogoMark: View {
+    private let colors: [[PegColor]] = [[.red, .blue], [.yellow, .purple]]
+
+    var body: some View {
+        VStack(spacing: 8) {
+            ForEach(Array(colors.enumerated()), id: \.offset) { _, row in
+                HStack(spacing: 8) {
+                    ForEach(row, id: \.self) { color in
+                        PegView(color: color, size: 34)
+                    }
+                }
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("红蓝黄紫四珠标志")
+    }
+}
+
 /// 色珠(VDD §4.1):空槽 / 填充 / 选中 / 幽灵 四态。
 /// 填充为柔和纯色,选中为深棕描边。
 struct PegView: View {

@@ -46,6 +46,7 @@ enum Theme {
     static let board = color(0xA49380)
     static let selection = color(0x57483B)
     static let status = color(0x403D35)
+    static let levelCompleted = color(0xD8E6D8)
 
     static let pegSize: CGFloat = 44
 }
